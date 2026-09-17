@@ -44,17 +44,19 @@ jobs:
 
             echo "=== Install dependencies ==="
 
-            sudo -u www -H env PATH="$APP_PATH" bash -c "
-              cd '$PROJECT'
+sudo -u www -H env PATH="$APP_PATH" bash -c "
+  cd '$PROJECT'
 
-              echo 'Node version:'
-              node -v
+  echo 'Node version:'
+  node -v
 
-              echo 'NPM version:'
-              npm -v
+  echo 'NPM version:'
+  npm -v
 
-              npm ci
-            "
+  export npm_config_cache='$PROJECT/.npm-cache'
+
+  npm ci
+"
 
             echo "=== Build Nuxt SSR ==="
 
