@@ -25,33 +25,52 @@ jobs:
             echo " Deploy Galery Mahendra"
             echo "======================================"
 
-            export PATH="/www/server/nodejs/v22.20.0/bin:$PATH"
-
-            cd /www/wwwroot/galery-mahendra
-
-            echo "=== Configure Git safe directory ==="
-            git config --global --add safe.directory /www/wwwroot/galery-mahendra
+            NODE_PATH="/www/server/nodejs/v22.20.0/bin"
+            PROJECT="/www/wwwroot/galery-mahendra"
 
             echo "=== Update source from GitHub ==="
-            git fetch origin main
-            git reset --hard origin/main
+
+            sudo -u www -H bash -c "
+              export PATH='$NODE_PATH:\$PATH'
+              cd '$PROJECT'
+
+              git config --global --add safe.directory '$PROJECT'
+
+              git fetch origin main
+              git reset --hard origin/main
+            "
 
             echo "=== Install dependencies ==="
-            npm ci
+
+            sudo -u www -H bash -c "
+              export PATH='$NODE_PATH:\$PATH'
+              cd '$PROJECT'
+
+              npm ci
+            "
 
             echo "=== Build Nuxt SSR ==="
-            npm run build
+
+            sudo -u www -H bash -c "
+              export PATH='$NODE_PATH:\$PATH'
+              cd '$PROJECT'
+
+              npm run build
+            "
 
             echo "=== Restart PM2 ==="
-            sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
+
+            sudo -u www -H env PATH="$NODE_PATH:$PATH" \
               pm2 restart galery_mahendra --update-env
 
             echo "=== Save PM2 ==="
-            sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
+
+            sudo -u www -H env PATH="$NODE_PATH:$PATH" \
               pm2 save
 
             echo "=== PM2 Status ==="
-            sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
+
+            sudo -u www -H env PATH="$NODE_PATH:$PATH" \
               pm2 status galery_mahendra
 
             echo "======================================"
