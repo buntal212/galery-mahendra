@@ -1,0 +1,46 @@
+name: Deploy Nuxt SSR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to HOMELAB
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+
+          script: |
+            set -e
+
+            export PATH="/www/server/nodejs/v22.20.0/bin:$PATH"
+
+            cd /www/wwwroot/galery-mahendra
+
+            echo "=== Update source ==="
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "=== Install dependencies ==="
+            npm ci
+
+            echo "=== Build Nuxt SSR ==="
+            npm run build
+
+            echo "=== Restart PM2 ==="
+            sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
+              pm2 restart galery_mahendra --update-env
+
+            echo "=== PM2 status ==="
+            sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
+              pm2 status galery_mahendra
+
+            echo "=== DEPLOY SUCCESS ==="
