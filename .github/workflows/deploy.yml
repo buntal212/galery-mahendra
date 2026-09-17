@@ -30,57 +30,77 @@ jobs:
 
             echo "=== Update source from GitHub ==="
 
-            sudo -u www -H env PATH="$APP_PATH" bash -c "
-              cd '$PROJECT'
+            sudo -u www -H env \
+              PATH="$APP_PATH" \
+              bash -c "
+                cd '$PROJECT'
 
-              echo 'Git version:'
-              git --version
+                echo 'Git version:'
+                git --version
 
-              git config --global --add safe.directory '$PROJECT'
+                git config --global --add safe.directory '$PROJECT'
 
-              git fetch origin main
-              git reset --hard origin/main
-            "
+                git fetch origin main
+                git reset --hard origin/main
+              "
 
             echo "=== Install dependencies ==="
 
-            sudo -u www -H env PATH="$APP_PATH" bash -c "
-              cd '$PROJECT'
+            sudo -u www -H env \
+              PATH="$APP_PATH" \
+              NUXT_TELEMETRY_DISABLED=1 \
+              npm_config_cache="$PROJECT/.npm-cache" \
+              CI=true \
+              bash -c "
+                cd '$PROJECT'
 
-              echo 'Node version:'
-              node -v
+                echo 'Node version:'
+                node -v
 
-              echo 'NPM version:'
-              npm -v
+                echo 'NPM version:'
+                npm -v
 
-              export npm_config_cache='$PROJECT/.npm-cache'
-
-              npm ci
-            "
+                npm ci
+              "
 
             echo "=== Build Nuxt SSR ==="
 
-            sudo -u www -H env PATH="$APP_PATH" bash -c "
-              cd '$PROJECT'
+            sudo -u www -H env \
+              PATH="$APP_PATH" \
+              NUXT_TELEMETRY_DISABLED=1 \
+              CI=true \
+              bash -c "
+                cd '$PROJECT'
 
-              export npm_config_cache='$PROJECT/.npm-cache'
+                npm run build
+              "
 
-              npm run build
-            "
+            echo "=== Check Nuxt output ==="
+
+            if [ ! -f "$PROJECT/.output/server/index.mjs" ]; then
+              echo "ERROR: .output/server/index.mjs tidak ditemukan"
+              exit 1
+            fi
+
+            echo "Nuxt build output OK"
 
             echo "=== Restart PM2 ==="
 
-            sudo -u www -H env PATH="$APP_PATH" \
+            sudo -u www -H env \
+              PATH="$APP_PATH" \
+              NUXT_TELEMETRY_DISABLED=1 \
               pm2 restart galery_mahendra --update-env
 
             echo "=== Save PM2 ==="
 
-            sudo -u www -H env PATH="$APP_PATH" \
+            sudo -u www -H env \
+              PATH="$APP_PATH" \
               pm2 save
 
             echo "=== PM2 Status ==="
 
-            sudo -u www -H env PATH="$APP_PATH" \
+            sudo -u www -H env \
+              PATH="$APP_PATH" \
               pm2 status galery_mahendra
 
             echo "======================================"
