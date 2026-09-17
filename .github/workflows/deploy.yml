@@ -21,11 +21,18 @@ jobs:
           script: |
             set -e
 
+            echo "======================================"
+            echo " Deploy Galery Mahendra"
+            echo "======================================"
+
             export PATH="/www/server/nodejs/v22.20.0/bin:$PATH"
 
             cd /www/wwwroot/galery-mahendra
 
-            echo "=== Update source ==="
+            echo "=== Configure Git safe directory ==="
+            git config --global --add safe.directory /www/wwwroot/galery-mahendra
+
+            echo "=== Update source from GitHub ==="
             git fetch origin main
             git reset --hard origin/main
 
@@ -39,8 +46,14 @@ jobs:
             sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
               pm2 restart galery_mahendra --update-env
 
-            echo "=== PM2 status ==="
+            echo "=== Save PM2 ==="
+            sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
+              pm2 save
+
+            echo "=== PM2 Status ==="
             sudo -u www -H env PATH="/www/server/nodejs/v22.20.0/bin:$PATH" \
               pm2 status galery_mahendra
 
-            echo "=== DEPLOY SUCCESS ==="
+            echo "======================================"
+            echo " DEPLOY SUCCESS"
+            echo "======================================"
