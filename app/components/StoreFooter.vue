@@ -14,7 +14,7 @@ defineProps<{ text: any }>()
         <p>{{ text.footer }}</p>
       </div>
       <div class="footer-details">
-        <div><span>{{ text.contactLabel }}</span><a :href="`tel:${text.phone.replaceAll(' ', '')}`">{{ text.phone }}</a><a :href="`mailto:${text.email}`">{{ text.email }}</a></div>
+        <div><span>{{ text.contactLabel }}</span><a :href="`https://wa.me/${text.phone.replaceAll(' ', '').replace('+', '')}`" target="_blank" rel="noopener">{{ text.phone }}</a><a :href="`mailto:${text.email}`">{{ text.email }}</a></div>
         <div><span>{{ text.socialLabel }}</span><a href="#" aria-label="Instagram MD Furni">Instagram {{ text.instagram }}</a><a href="#" aria-label="TikTok MD Furni">TikTok {{ text.tiktok }}</a></div>
         <div><span>{{ text.addressLabel }}</span><address>{{ text.address }}</address></div>
       </div>
