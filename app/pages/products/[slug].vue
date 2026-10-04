@@ -241,7 +241,7 @@ useHead(() => ({
         <section v-if="specifications.length" class="product-detail__specifications">
           <h2>Spesifikasi</h2>
           <dl>
-            <template v-for="([label, value], index) in specifications" :key="index">
+            <template v-for="[label, value] in specifications" :key="label">
               <dt>{{ label }}</dt>
               <dd>{{ value }}</dd>
             </template>
