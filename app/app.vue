@@ -1,49 +1,124 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import ProductCatalogSEO from './ProductCatalogSEO.vue'
 
 const locale = ref<'id' | 'en'>('id')
 const activeCategory = ref('all')
 const cartCount = ref(0)
 const query = ref('')
+const route = useRoute()
+const requestUrl = useRequestURL()
+const currentPage = computed(() => {
+  const value = Number(route.query.page || 1)
+  return Number.isInteger(value) && value > 0 && value <= 10000 ? value : 1
+})
+const productPageCache = useState<Record<number, { products: any[]; hasNext: boolean }>>(
+  'product-catalog-pages',
+  () => ({}),
+)
+const categoryCache = useState<any[] | null>('product-catalog-categories', () => null)
 
 const copy = {
   id: {
     nav: ['Koleksi', 'Cerita Kami', 'Kontak'], search: 'Cari produk', cart: 'Keranjang belanja',
     heroEyebrow: 'DIBUAT DENGAN PENUH MAKNA', heroTitle: 'Keindahan yang', heroEmphasis: 'tumbuh bersama waktu.', heroDescription: 'Koleksi kerajinan kayu yang dibentuk oleh tangan-tangan terampil, untuk menghangatkan setiap sudut rumahmu.', explore: 'Jelajahi Koleksi', heroCaption: 'Cermin Senja — Koleksi 2026',
-    collectionEyebrow: 'PILIHAN UNTUK RUMAHMU', collectionTitle: 'Temukan karya', collectionEmphasis: 'bercerita.', collectionDescription: 'Setiap simpul dan serat kayu menyimpan cerita unik. Kami merayakannya dalam karya yang dibuat untuk bertahan lama.', searchPlaceholder: 'Cari karya...', empty: 'Karya yang kamu cari belum tersedia.', allProducts: 'Lihat Semua Karya',
+    collectionEyebrow: 'PILIHAN UNTUK RUMAHMU', collectionTitle: 'Temukan karya', collectionEmphasis: 'bercerita.', collectionDescription: 'Setiap simpul dan serat kayu menyimpan cerita unik. Kami merayakannya dalam karya yang dibuat untuk bertahan lama.', searchPlaceholder: 'Cari karya...', empty: 'Karya yang kamu cari belum tersedia.', allProducts: 'Lihat Semua Karya', paginationLabel: 'Navigasi halaman produk', previousPage: 'Sebelumnya', nextPage: 'Berikutnya', pageNumber: 'Halaman',
     storyEyebrow: 'DARI ALAM, UNTUK RUMAH', storyTitle: 'Diukir dengan', storyEmphasis: 'kesabaran.', storyDescription: 'Kami bekerja bersama perajin lokal untuk memberi kehidupan kedua pada kayu pilihan. Bukan sekadar benda, melainkan teman di ruang hidupmu.', storyQuote: 'Setiap serat kayu memiliki arah. Tugas kami adalah mendengarkan dan menjadikannya karya.', storyLink: 'Cerita MD furni',
     values: [['Buatan tangan', 'Setiap detail dikerjakan dengan ketelitian dan rasa.'], ['Kayu pilihan', 'Material berkualitas yang diseleksi dengan penuh tanggung jawab.'], ['Terus bertumbuh', 'Karya yang menua indah dan menjadi bagian cerita rumahmu.']], footer: 'Kerajinan kayu untuk hidup yang lebih hangat.', madeIn: 'Dibuat di Indonesia.', add: 'Tambah', contactLabel: 'HUBUNGI KAMI', socialLabel: 'IKUTI KAMI', addressLabel: 'BENGKEL PERAJIN', phone: '+62 813-3642-7712', email: 'halo@mdfurni.id', instagram: '@mdfurni.id', tiktok: '@mdfurni.id', address: 'Jl. Kerajinan Kayu No. 18, Jepara, Jawa Tengah', categories: { all: 'Semua', decor: 'Dekorasi', furniture: 'Perabot', kitchen: 'Peralatan Dapur', accessory: 'Aksesori' },
   },
   en: {
     nav: ['Collection', 'Our Story', 'Contact'], search: 'Search products', cart: 'Shopping cart',
     heroEyebrow: 'MADE WITH MEANING', heroTitle: 'Beauty that', heroEmphasis: 'grows with time.', heroDescription: 'A collection of wood crafts shaped by skilled hands, made to warm every corner of your home.', explore: 'Explore Collection', heroCaption: 'Sunset Mirror — 2026 Collection',
-    collectionEyebrow: 'CHOSEN FOR YOUR HOME', collectionTitle: 'Discover pieces', collectionEmphasis: 'with a story.', collectionDescription: 'Every knot and grain holds a unique story. We celebrate it in pieces made to last.', searchPlaceholder: 'Search pieces...', empty: 'The piece you are looking for is not available yet.', allProducts: 'View All Pieces',
+    collectionEyebrow: 'CHOSEN FOR YOUR HOME', collectionTitle: 'Discover pieces', collectionEmphasis: 'with a story.', collectionDescription: 'Every knot and grain holds a unique story. We celebrate it in pieces made to last.', searchPlaceholder: 'Search pieces...', empty: 'The piece you are looking for is not available yet.', allProducts: 'View All Pieces', paginationLabel: 'Product page navigation', previousPage: 'Previous', nextPage: 'Next', pageNumber: 'Page',
     storyEyebrow: 'FROM NATURE, FOR HOME', storyTitle: 'Carved with', storyEmphasis: 'patience.', storyDescription: 'We work with local makers to give selected wood a second life. More than an object, it is a companion for your living space.', storyQuote: 'Every grain has its own direction. Our work is to listen and turn it into something meaningful.', storyLink: 'The MD furni Story',
     values: [['Handcrafted', 'Every detail is shaped with care and feeling.'], ['Selected wood', 'Quality materials sourced with thoughtful responsibility.'], ['Made to grow', 'Pieces that age beautifully and become part of your home story.']], footer: 'Woodcraft for a warmer way of living.', madeIn: 'Made in Indonesia.', add: 'Add', contactLabel: 'CONTACT US', socialLabel: 'FOLLOW US', addressLabel: 'ARTISAN WORKSHOP', phone: '+62 813-3642-7712', email: 'hello@mdfurni.id', instagram: '@mdfurni.id', tiktok: '@mdfurni.id', address: '18 Woodcraft Street, Jepara, Central Java, Indonesia', categories: { all: 'All', decor: 'Decor', furniture: 'Furniture', kitchen: 'Kitchenware', accessory: 'Accessories' },
   },
 }
 
-const text = computed(() => copy[locale.value])
-const categoryKeys = ['all', 'decor', 'furniture', 'kitchen', 'accessory'] as const
-const categories = computed(() => categoryKeys.map(key => ({ key, label: text.value.categories[key] })))
-const products = [
-  { name: ['Cermin Senja', 'Sunset Mirror'], category: 'decor', price: 'Rp 875.000', image: 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1000&q=85', tag: ['Terlaris', 'Bestseller'], color: '#b88558' },
-  { name: ['Bangku Rimba', 'Forest Stool'], category: 'furniture', price: 'Rp 1.250.000', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=85', tag: ['Baru', 'New'], color: '#9a7459' },
-  { name: ['Mangkuk Pagi', 'Morning Bowl'], category: 'kitchen', price: 'Rp 285.000', image: 'https://images.unsplash.com/photo-1603199506016-b9a594b593c0?auto=format&fit=crop&w=1000&q=85', tag: ['', ''], color: '#b79063' },
-  { name: ['Vas Kembang', 'Bloom Vase'], category: 'decor', price: 'Rp 420.000', image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1000&q=85', tag: ['', ''], color: '#8c704e' },
-  { name: ['Meja Sisi Lestari', 'Lestari Side Table'], category: 'furniture', price: 'Rp 1.590.000', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=85', tag: ['Pilihan Kami', 'Our Pick'], color: '#806146' },
-  { name: ['Sendok Ukir', 'Carved Spoon'], category: 'kitchen', price: 'Rp 165.000', image: 'https://images.unsplash.com/photo-1509358273864-3b7da269dcd9?auto=format&fit=crop&w=1000&q=85', tag: ['', ''], color: '#c29366' },
-  { name: ['Nampan Kawi', 'Kawi Tray'], category: 'accessory', price: 'Rp 350.000', image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1000&q=85', tag: ['', ''], color: '#966c4f' },
-  { name: ['Lampu Arsa', 'Arsa Lamp'], category: 'decor', price: 'Rp 695.000', image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=1000&q=85', tag: ['Terbatas', 'Limited'], color: '#98724f' },
-]
+const config = useRuntimeConfig()
+const catalogKey = computed(() => `product-catalog-${currentPage.value}`)
+const { data: catalog } = await useAsyncData(catalogKey, async () => {
+  try {
+    let pageData = productPageCache.value[currentPage.value]
+    let currentPageHasPrevious = currentPage.value > 1
 
-const filteredProducts = computed(() => products.filter((product) => {
+    if (!pageData) {
+      const response = await $fetch(`${config.public.apiBase}/catalog/products`, {
+        query: { page: currentPage.value },
+      })
+      pageData = {
+        products: response.data || [],
+        hasNext: Boolean(response.next_page_url),
+      }
+      productPageCache.value[currentPage.value] = pageData
+      currentPageHasPrevious = Boolean(response.prev_page_url)
+    }
+
+    if (!categoryCache.value) {
+      categoryCache.value = await $fetch(`${config.public.apiBase}/catalog/categories`)
+    }
+
+    return {
+      categories: categoryCache.value,
+      products: pageData.products,
+      page: currentPage.value,
+      hasPrevious: currentPageHasPrevious,
+      hasNext: pageData.hasNext,
+      unavailable: false,
+    }
+  } catch {
+    return { categories: [], products: [], page: currentPage.value, hasPrevious: false, hasNext: false, unavailable: true }
+  }
+})
+
+const text = computed(() => ({
+  ...copy[locale.value],
+  empty: catalog.value?.unavailable
+    ? locale.value === 'id'
+      ? 'Katalog belum dapat dimuat. Silakan coba lagi nanti.'
+      : 'The catalog could not be loaded. Please try again later.'
+    : copy[locale.value].empty,
+}))
+
+const categories = computed(() => [
+  { key: 'all', label: text.value.categories.all },
+  ...(catalog.value?.categories || []).map((category: any) => ({
+    key: category.slug,
+    label: category.nama,
+  })),
+])
+const products = computed(() => (catalog.value?.products || []).map((product: any) => ({
+  id: product.id,
+  slug: product.slug,
+  name: [product.nama, product.nama],
+  category: product.category?.slug || '',
+  categoryName: product.category?.nama || '',
+  priceLabel: product.harga === null || product.harga === undefined || product.harga === ''
+    ? null
+    : new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', {
+        style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
+      }).format(Number(product.harga)),
+  image: product.images?.[0]?.thumbnail_url || product.images?.[0]?.image_url || '/images/product-placeholder.svg',
+  imageAlt: product.images?.[0]?.alt_text || (product.images?.length ? product.nama : 'Foto produk belum tersedia'),
+  tag: ['', ''],
+  color: '#b88558',
+})))
+
+const filteredProducts = computed(() => products.value.filter((product) => {
   const productName = product.name[locale.value === 'id' ? 0 : 1]
   const inCategory = activeCategory.value === 'all' || product.category === activeCategory.value
   return inCategory && productName.toLowerCase().includes(query.value.toLowerCase())
 }))
 
 function addToCart() { cartCount.value++ }
+
+function pageLink(page: number) {
+  return page > 1 ? `${route.path}?page=${page}` : route.path
+}
+
+function productHref(slug: string) {
+  return `/products/${encodeURIComponent(slug)}`
+}
 
 const seoCopy = {
   id: {
@@ -58,11 +133,16 @@ const seoCopy = {
   },
 }
 
+const pageTitle = computed(() => currentPage.value > 1
+  ? `${seoCopy[locale.value].title} | ${text.value.pageNumber} ${currentPage.value}`
+  : seoCopy[locale.value].title)
+const isHomePage = computed(() => route.path === '/')
+
 useSeoMeta({
-  title: () => seoCopy[locale.value].title,
-  description: () => seoCopy[locale.value].description,
-  ogTitle: () => seoCopy[locale.value].title,
-  ogDescription: () => seoCopy[locale.value].description,
+  title: () => isHomePage.value ? pageTitle.value : undefined,
+  description: () => isHomePage.value ? seoCopy[locale.value].description : undefined,
+  ogTitle: () => isHomePage.value ? pageTitle.value : undefined,
+  ogDescription: () => isHomePage.value ? seoCopy[locale.value].description : undefined,
   ogSiteName: 'MD furni and craft',
   ogType: 'website',
   ogLocale: () => locale.value === 'id' ? 'id_ID' : 'en_US',
@@ -72,16 +152,28 @@ useHead(() => ({
   htmlAttrs: {
     lang: locale.value,
   },
+  link: [
+    ...(isHomePage.value ? [{
+      rel: 'canonical',
+      href: `${requestUrl.origin}${route.path}${currentPage.value > 1 ? `?page=${currentPage.value}` : ''}`,
+    }] : []),
+  ],
 }))
 </script>
 
 <template>
-  <main :lang="locale">
+  <NuxtPage />
+  <main v-if="route.path === '/'" :lang="locale">
     <section class="hero">
       <StoreHeader :text="text" :locale="locale" :cart-count="cartCount" @toggle-locale="locale = locale === 'id' ? 'en' : 'id'" @focus-search="document.querySelector('.catalog-search')?.focus()" />
       <HeroSection :text="text" :locale="locale" />
     </section>
-    <ProductCatalog v-model:query="query" :text="text" :locale="locale" :categories="categories" :active-category="activeCategory" :products="filteredProducts" @change-category="activeCategory = $event" @add-to-cart="addToCart" />
+    <ProductCatalogSEO v-model:query="query" :text="text" :locale="locale" :categories="categories" :active-category="activeCategory" :products="filteredProducts" :product-href="productHref" @change-category="activeCategory = $event" @add-to-cart="addToCart" />
+    <nav v-if="!catalog?.unavailable && (products.length || currentPage > 1)" class="catalog-pagination shell" :aria-label="text.paginationLabel">
+      <NuxtLink v-if="catalog?.hasPrevious" :to="pageLink(currentPage - 1)" rel="prev">{{ text.previousPage }}</NuxtLink>
+      <span aria-current="page">{{ text.pageNumber }} {{ catalog?.page || currentPage }}</span>
+      <NuxtLink v-if="catalog?.hasNext" :to="pageLink(currentPage + 1)" rel="next">{{ text.nextPage }}</NuxtLink>
+    </nav>
     <StorySection :text="text" />
     <ValueSection :values="text.values" />
     <StoreFooter :text="text" />
@@ -273,4 +365,9 @@ footer { padding:0 0 28px; background:#171b18; }
   .footer-details { grid-template-columns:1fr; }
   .copyright { gap:10px; flex-direction:column; }
 }
+.catalog-pagination { display:flex; justify-content:center; align-items:center; gap:14px; margin:0 auto 110px; }
+.catalog-pagination a,.catalog-pagination span { min-width:110px; padding:12px 18px; border:1px solid var(--line); color:var(--ink); text-align:center; text-decoration:none; font-size:12px; }
+.catalog-pagination a:hover { border-color:var(--moss); color:var(--moss); }
+.catalog-pagination span { border-color:var(--moss); background:var(--moss); color:#fff; }
+.more-button { display:none !important; }
 </style>

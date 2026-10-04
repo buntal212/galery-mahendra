@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760" fill="none">
+  <rect width="600" height="760" fill="#E9E2D5"/>
+  <path d="M0 560 600 430v330H0V560Z" fill="#D7C5AD"/>
+  <path d="M215 480h170v15H215zM235 495v120m130-120v120M210 615h180v15H210z" fill="#8B6849"/>
+  <path d="M245 470c0-31 25-56 55-56s55 25 55 56v10H245v-10Z" fill="#B88558"/>
+  <text x="300" y="684" fill="#6B5B4A" font-family="sans-serif" font-size="19" text-anchor="middle" letter-spacing="3">MD FURNI</text>
+  <text x="300" y="717" fill="#6B5B4A" font-family="sans-serif" font-size="13" text-anchor="middle" letter-spacing="1">FOTO PRODUK BELUM TERSEDIA</text>
+  <text x="300" y="740" fill="#8B6849" font-family="sans-serif" font-size="11" text-anchor="middle">Sedang disiapkan</text>
+</svg>
