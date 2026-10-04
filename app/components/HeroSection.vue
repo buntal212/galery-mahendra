@@ -41,7 +41,7 @@ onBeforeUnmount(() => { if (autoplay) clearInterval(autoplay) })
         </div>
       </div>
       <div class="hero-brand-card">
-        <img src="/images/md-furni-craft-logo.png" alt="">
+        <img src="/images/md-furni-craft-logo.png?v=20261004" alt="">
         <div><span>{{ locale === 'id' ? 'DIBUAT DENGAN HATI' : 'MADE WITH HEART' }}</span><strong>MD FURNI</strong><small>Authentic Indonesian Woodcraft</small></div>
       </div>
     </div>

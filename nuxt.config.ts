@@ -8,6 +8,16 @@ export default defineNuxtConfig({
         'Cache-Control': 'no-transform',
       },
     },
+    '/fonts/**': {
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    },
+    '/images/**': {
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    },
   },
   runtimeConfig: {
     public: {
