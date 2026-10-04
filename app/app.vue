@@ -24,14 +24,14 @@ const copy = {
     heroEyebrow: 'DIBUAT DENGAN PENUH MAKNA', heroTitle: 'Keindahan yang', heroEmphasis: 'tumbuh bersama waktu.', heroDescription: 'Koleksi kerajinan kayu yang dibentuk oleh tangan-tangan terampil, untuk menghangatkan setiap sudut rumahmu.', explore: 'Jelajahi Koleksi', heroCaption: 'Cermin Senja — Koleksi 2026',
     collectionEyebrow: 'PILIHAN UNTUK RUMAHMU', collectionTitle: 'Temukan karya', collectionEmphasis: 'bercerita.', collectionDescription: 'Setiap simpul dan serat kayu menyimpan cerita unik. Kami merayakannya dalam karya yang dibuat untuk bertahan lama.', searchPlaceholder: 'Cari karya...', empty: 'Karya yang kamu cari belum tersedia.', allProducts: 'Lihat Semua Karya', paginationLabel: 'Navigasi halaman produk', previousPage: 'Sebelumnya', nextPage: 'Berikutnya', pageNumber: 'Halaman',
     storyEyebrow: 'DARI ALAM, UNTUK RUMAH', storyTitle: 'Diukir dengan', storyEmphasis: 'kesabaran.', storyDescription: 'Kami bekerja bersama perajin lokal untuk memberi kehidupan kedua pada kayu pilihan. Bukan sekadar benda, melainkan teman di ruang hidupmu.', storyQuote: 'Setiap serat kayu memiliki arah. Tugas kami adalah mendengarkan dan menjadikannya karya.', storyLink: 'Cerita MD furni',
-    values: [['Buatan tangan', 'Setiap detail dikerjakan dengan ketelitian dan rasa.'], ['Kayu pilihan', 'Material berkualitas yang diseleksi dengan penuh tanggung jawab.'], ['Terus bertumbuh', 'Karya yang menua indah dan menjadi bagian cerita rumahmu.']], footer: 'Kerajinan kayu untuk hidup yang lebih hangat.', madeIn: 'Dibuat di Indonesia.', add: 'Tambah', contactLabel: 'HUBUNGI KAMI', socialLabel: 'IKUTI KAMI', addressLabel: 'BENGKEL PERAJIN', phone: '+62 813-3642-7712', email: 'halo@mdfurni.id', instagram: '@mdfurni.id', tiktok: '@mdfurni.id', address: 'Jl. Kerajinan Kayu No. 18, Jepara, Jawa Tengah', categories: { all: 'Semua', decor: 'Dekorasi', furniture: 'Perabot', kitchen: 'Peralatan Dapur', accessory: 'Aksesori' },
+    values: [['Buatan tangan', 'Setiap detail dikerjakan dengan ketelitian dan rasa.'], ['Kayu pilihan', 'Material berkualitas yang diseleksi dengan penuh tanggung jawab.'], ['Terus bertumbuh', 'Karya yang menua indah dan menjadi bagian cerita rumahmu.']], footer: 'Kerajinan kayu untuk hidup yang lebih hangat.', madeIn: 'Dibuat di Indonesia.', add: 'Tambah', contactLabel: 'HUBUNGI KAMI', socialLabel: 'IKUTI KAMI', addressLabel: 'BENGKEL PERAJIN', phone: '+62 813-3642-7712', email: 'mdfurniture212@gmail.com', instagram: '@mdfurni.id', tiktok: '@mdfurni.id', address: 'Jl. Kerajinan Kayu No. 18, Jepara, Jawa Tengah', categories: { all: 'Semua', decor: 'Dekorasi', furniture: 'Perabot', kitchen: 'Peralatan Dapur', accessory: 'Aksesori' },
   },
   en: {
     nav: ['Collection', 'Our Story', 'Contact'], search: 'Search products', cart: 'Shopping cart',
     heroEyebrow: 'MADE WITH MEANING', heroTitle: 'Beauty that', heroEmphasis: 'grows with time.', heroDescription: 'A collection of wood crafts shaped by skilled hands, made to warm every corner of your home.', explore: 'Explore Collection', heroCaption: 'Sunset Mirror — 2026 Collection',
     collectionEyebrow: 'CHOSEN FOR YOUR HOME', collectionTitle: 'Discover pieces', collectionEmphasis: 'with a story.', collectionDescription: 'Every knot and grain holds a unique story. We celebrate it in pieces made to last.', searchPlaceholder: 'Search pieces...', empty: 'The piece you are looking for is not available yet.', allProducts: 'View All Pieces', paginationLabel: 'Product page navigation', previousPage: 'Previous', nextPage: 'Next', pageNumber: 'Page',
     storyEyebrow: 'FROM NATURE, FOR HOME', storyTitle: 'Carved with', storyEmphasis: 'patience.', storyDescription: 'We work with local makers to give selected wood a second life. More than an object, it is a companion for your living space.', storyQuote: 'Every grain has its own direction. Our work is to listen and turn it into something meaningful.', storyLink: 'The MD furni Story',
-    values: [['Handcrafted', 'Every detail is shaped with care and feeling.'], ['Selected wood', 'Quality materials sourced with thoughtful responsibility.'], ['Made to grow', 'Pieces that age beautifully and become part of your home story.']], footer: 'Woodcraft for a warmer way of living.', madeIn: 'Made in Indonesia.', add: 'Add', contactLabel: 'CONTACT US', socialLabel: 'FOLLOW US', addressLabel: 'ARTISAN WORKSHOP', phone: '+62 813-3642-7712', email: 'hello@mdfurni.id', instagram: '@mdfurni.id', tiktok: '@mdfurni.id', address: '18 Woodcraft Street, Jepara, Central Java, Indonesia', categories: { all: 'All', decor: 'Decor', furniture: 'Furniture', kitchen: 'Kitchenware', accessory: 'Accessories' },
+    values: [['Handcrafted', 'Every detail is shaped with care and feeling.'], ['Selected wood', 'Quality materials sourced with thoughtful responsibility.'], ['Made to grow', 'Pieces that age beautifully and become part of your home story.']], footer: 'Woodcraft for a warmer way of living.', madeIn: 'Made in Indonesia.', add: 'Add', contactLabel: 'CONTACT US', socialLabel: 'FOLLOW US', addressLabel: 'ARTISAN WORKSHOP', phone: '+62 813-3642-7712', email: 'mdfurniture212@gmail.com', instagram: '@mdfurni.id', tiktok: '@mdfurni.id', address: '18 Woodcraft Street, Jepara, Central Java, Indonesia', categories: { all: 'All', decor: 'Decor', furniture: 'Furniture', kitchen: 'Kitchenware', accessory: 'Accessories' },
   },
 }
 
@@ -227,7 +227,7 @@ useHead(() => ({
 @media (max-width:420px) { .shell { width:calc(100% - 32px); }.nav { height:98px; }.nav .brand-logo { width:64px; height:64px; }.nav .brand-copy strong { font-size:15px; }.nav .brand-copy i { font-size:13px; }.nav-actions { display:none; }.hero { min-height:610px; }.hero-content { padding-top:105px; }.hero-copy { font-size:14px; }.products { gap:25px 10px; }.product-info { display:block; }.product-info strong { display:block; padding-top:8px; }.product-info h3 { font-size:15px; }.collection { padding:75px 0; }.footer-details { grid-template-columns:1fr; gap:18px; } }
 
 /* Modern MD Furni storefront */
-:root { --ink:#1d211d; --paper:#f6f3ec; --cream:#e9e2d5; --rust:#b7693f; --moss:#34463a; --line:#d8d0c2; }
+:root { --ink:#1d211d; --paper:#f6f3ec; --cream:#e9e2d5; --rust:#8f472b; --moss:#34463a; --line:#d8d0c2; }
 body { background:var(--paper); overflow-x:hidden; }
 .shell { width:min(1240px,calc(100% - 80px)); }
 .hero { min-height:840px; background:#171b17; }
@@ -274,7 +274,12 @@ body { background:var(--paper); overflow-x:hidden; }
 .hero-brand-card strong { font-size:15px; letter-spacing:2px; }
 .hero-brand-card small { color:rgba(255,255,255,.65); font:9px 'DM Mono',monospace; line-height:1.35; }
 .hero-controls { bottom:25px; }
-.hero-control { width:38px; height:38px; font-size:16px; }
+.hero-control { width:44px; height:44px; font-size:16px; }
+.hero-dots { gap:0; margin:0 4px; }
+.hero-dot { position:relative; width:24px; height:24px; background:transparent; }
+.hero-dot::after { content:''; position:absolute; top:50%; left:50%; width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.45); transform:translate(-50%,-50%); }
+.hero-dot.active { width:24px; border-radius:50%; background:transparent; }
+.hero-dot.active::after { width:18px; height:6px; border-radius:8px; background:#fff; }
 .hero-caption { bottom:33px; }
 .collection { padding:135px 0 125px; }
 .section-top { align-items:flex-end; }
@@ -283,7 +288,7 @@ body { background:var(--paper); overflow-x:hidden; }
 .section-intro { width:390px; padding-left:26px; border-left:1px solid var(--line); font-size:15px; }
 .toolbar { margin:72px 0 32px; padding:9px; border:1px solid var(--line); border-radius:4px; background:#eee9df; }
 .category-tabs { gap:4px; }
-.category-tabs button { padding:11px 16px; border:0; border-radius:2px; color:#6f6d66; font-size:11px; }
+.category-tabs button { padding:11px 16px; border:0; border-radius:2px; color:#53554e; font-size:11px; }
 .category-tabs button.active { color:#fff; background:var(--moss); }
 .search-field { height:38px; padding:0 12px; border-left:1px solid var(--line); }
 .search-field input { width:180px; }
@@ -297,7 +302,7 @@ body { background:var(--paper); overflow-x:hidden; }
 .quick-add span { font-size:20px; line-height:1; }
 .quick-add small { font-size:10px; font-weight:600; }
 .product-info { padding-top:18px; }
-.product-info p { margin-bottom:7px; color:#91897e; letter-spacing:.8px; }
+.product-info p { margin-bottom:7px; color:#5f5c55; letter-spacing:.8px; }
 .product-info h3 { font-size:20px; }
 .product-info strong { font-size:12px; }
 .more-button { margin-top:70px; }

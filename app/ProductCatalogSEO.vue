@@ -29,7 +29,11 @@ defineEmits<{
     </div>
 
     <div class="toolbar">
-      <div class="category-tabs" role="tablist" :aria-label="text.categories.all">
+      <div
+        class="category-tabs"
+        role="group"
+        :aria-label="locale === 'id' ? 'Filter kategori produk' : 'Product category filters'"
+      >
         <button
           v-for="category in categories"
           :key="category.key"
