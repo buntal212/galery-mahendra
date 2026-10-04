@@ -28,7 +28,16 @@ onBeforeUnmount(() => { if (autoplay) clearInterval(autoplay) })
 <template>
   <div>
     <div class="hero-slides" aria-hidden="true">
-      <div v-for="(slide, index) in slides" :key="slide.image" class="hero-slide" :class="{ active: activeSlide === index }" :style="{ backgroundImage: `url('${slide.image}')` }"></div>
+      <img
+        class="hero-lcp-image"
+        :class="{ active: activeSlide === 0 }"
+        :src="slides[0].image"
+        alt=""
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      >
+      <div v-for="(slide, index) in slides" :key="slide.image" class="hero-slide" :class="{ active: activeSlide === index }" :style="index === 0 ? undefined : { backgroundImage: `url('${slide.image}')` }"></div>
     </div>
     <div class="hero-content shell">
       <div class="hero-copy-wrap">
