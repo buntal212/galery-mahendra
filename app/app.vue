@@ -95,9 +95,7 @@ const products = computed(() => (catalog.value?.products || []).map((product: an
   categoryName: product.category?.nama || '',
   priceLabel: product.harga === null || product.harga === undefined || product.harga === ''
     ? null
-    : new Intl.NumberFormat(locale.value === 'id' ? 'id-ID' : 'en-US', {
-        style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
-      }).format(Number(product.harga)),
+    : formatPrice(product.harga),
   image: product.images?.[0]?.thumbnail_url || product.images?.[0]?.image_url || '/images/product-placeholder.svg',
   imageAlt: product.images?.[0]?.alt_text || (product.images?.length ? product.nama : 'Foto produk belum tersedia'),
   tag: ['', ''],
@@ -111,6 +109,13 @@ const filteredProducts = computed(() => products.value.filter((product) => {
 }))
 
 function addToCart() { cartCount.value++ }
+
+function formatPrice(value: string | number) {
+  const amount = Math.round(Number(value))
+  const separator = locale.value === 'id' ? '.' : ','
+  const formatted = String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, separator)
+  return locale.value === 'id' ? `Rp ${formatted}` : `IDR ${formatted}`
+}
 
 function pageLink(page: number) {
   return page > 1 ? `${route.path}?page=${page}` : route.path

@@ -89,9 +89,10 @@ const specifications = computed(() =>
 const priceAvailable = computed(
   () => product.value.harga !== null && product.value.harga !== undefined && product.value.harga !== '',
 )
+const formatPrice = (value: string | number) =>
+  `Rp ${String(Math.round(Number(value))).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`
 const priceLabel = computed(() => priceAvailable.value
-  ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
-      .format(Number(product.value.harga))
+  ? formatPrice(product.value.harga)
   : null)
 const siteUrl = String(config.public.siteUrl).replace(/\/+$/, '')
 const canonicalUrl = computed(() =>
