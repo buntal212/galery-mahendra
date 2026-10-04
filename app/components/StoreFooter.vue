@@ -10,7 +10,7 @@ defineProps<{ text: any }>()
     </div>
     <div class="shell footer-inner">
       <div class="footer-identity">
-        <a href="#" class="brand footer-brand" aria-label="MD furni and craft Indonesia beranda"><img class="brand-logo" src="/images/md-furni-craft-logo.png?v=20261004" alt="Logo MD furni and craft Indonesia"><span><strong>MD FURNI</strong><i>and craft Indonesia</i></span></a>
+        <a href="#" class="brand footer-brand" aria-label="MD furni and craft Indonesia beranda"><img class="brand-logo" src="/images/md-furni-craft-logo-256.webp" alt="Logo MD furni and craft Indonesia"><span><strong>MD FURNI</strong><i>and craft Indonesia</i></span></a>
         <p>{{ text.footer }}</p>
       </div>
       <div class="footer-details">
