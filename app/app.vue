@@ -302,7 +302,7 @@ body { background:var(--paper); overflow-x:hidden; }
 .product-info strong { font-size:12px; }
 .more-button { margin-top:70px; }
 .story { width:min(1440px,calc(100% - 48px)); min-height:660px; margin:0 auto 0; grid-template-columns:55% 45%; background:var(--moss); }
-.story-image { position:relative; background-image:linear-gradient(180deg,transparent 62%,rgba(10,14,11,.65)),url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=75'); }
+.story-image { position:relative; background-image:linear-gradient(180deg,transparent 62%,rgba(10,14,11,.65)),url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=45'); }
 .story-image > span { position:absolute; left:32px; bottom:30px; color:#fff; font:500 64px/1 'Playfair Display',serif; }
 .story-image > small { position:absolute; left:110px; bottom:37px; color:rgba(255,255,255,.7); font:9px 'DM Mono',monospace; letter-spacing:1.5px; }
 .story-copy { max-width:590px; padding:110px clamp(55px,7vw,110px) 90px 70px; }

@@ -12,7 +12,7 @@ defineEmits<{ toggleLocale: [], focusSearch: [] }>()
     </div>
     <nav class="nav shell">
       <a href="#" class="brand" aria-label="MD furni and craft Indonesia beranda">
-        <span class="brand-logo-wrap"><img class="brand-logo" src="/images/md-furni-craft-logo-256.webp" alt="Logo MD furni and craft Indonesia"></span>
+        <span class="brand-logo-wrap"><picture><source type="image/avif" srcset="/images/md-furni-craft-logo-128.avif 128w, /images/md-furni-craft-logo-256.avif 256w" sizes="72px"><img class="brand-logo" src="/images/md-furni-craft-logo-128.webp" srcset="/images/md-furni-craft-logo-128.webp 128w, /images/md-furni-craft-logo-256.webp 256w" sizes="72px" alt="Logo MD furni and craft Indonesia"></picture></span>
         <span class="brand-copy"><strong>MD FURNI</strong><i>and craft Indonesia</i></span>
       </a>
       <div class="nav-links">

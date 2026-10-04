@@ -7,14 +7,14 @@ let autoplay: ReturnType<typeof setInterval> | undefined
 
 const slides = computed(() => props.locale === 'id'
   ? [
-      { eyebrow: 'KOLEKSI UNGGULAN', title: 'Hidupkan ruang', emphasis: 'dengan karya.', description: 'Kerajinan kayu buatan tangan yang hangat, jujur, dan dirancang untuk menjadi bagian dari cerita rumahmu.', action: 'Jelajahi Koleksi', caption: 'Cermin Senja — Koleksi 2026', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1900&q=75' },
-      { eyebrow: 'KARYA TERBARU', title: 'Alami, sederhana,', emphasis: 'dan bermakna.', description: 'Perabot berkarakter yang memadukan fungsi modern dengan keindahan alami kayu pilihan.', action: 'Lihat Koleksi Baru', caption: 'Bangku Rimba — Edisi Terbatas', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1900&q=75' },
-      { eyebrow: 'DIBUAT OLEH PERAJIN', title: 'Setiap serat', emphasis: 'punya cerita.', description: 'Dari pilihan kayu hingga sentuhan akhir, setiap karya diproses dengan kesabaran dan ketelitian.', action: 'Cerita Kami', caption: 'Dibuat dengan tangan di Indonesia', image: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?auto=format&fit=crop&w=1900&q=75' },
+      { eyebrow: 'KOLEKSI UNGGULAN', title: 'Hidupkan ruang', emphasis: 'dengan karya.', description: 'Kerajinan kayu buatan tangan yang hangat, jujur, dan dirancang untuk menjadi bagian dari cerita rumahmu.', action: 'Jelajahi Koleksi', caption: 'Cermin Senja — Koleksi 2026', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1900&q=45' },
+      { eyebrow: 'KARYA TERBARU', title: 'Alami, sederhana,', emphasis: 'dan bermakna.', description: 'Perabot berkarakter yang memadukan fungsi modern dengan keindahan alami kayu pilihan.', action: 'Lihat Koleksi Baru', caption: 'Bangku Rimba — Edisi Terbatas', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1900&q=45' },
+      { eyebrow: 'DIBUAT OLEH PERAJIN', title: 'Setiap serat', emphasis: 'punya cerita.', description: 'Dari pilihan kayu hingga sentuhan akhir, setiap karya diproses dengan kesabaran dan ketelitian.', action: 'Cerita Kami', caption: 'Dibuat dengan tangan di Indonesia', image: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?auto=format&fit=crop&w=1900&q=45' },
     ]
   : [
-      { eyebrow: 'FEATURED COLLECTION', title: 'Bring spaces alive', emphasis: 'with craft.', description: 'Warm and honest handcrafted wood pieces, designed to become part of your home story.', action: 'Explore Collection', caption: 'Sunset Mirror — 2026 Collection', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1900&q=75' },
-      { eyebrow: 'NEW ARRIVALS', title: 'Natural, simple,', emphasis: 'and meaningful.', description: 'Characterful furniture blending modern function with the natural beauty of selected timber.', action: 'View New Collection', caption: 'Forest Stool — Limited Edition', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1900&q=75' },
-      { eyebrow: 'MADE BY ARTISANS', title: 'Every grain', emphasis: 'has a story.', description: 'From selected timber to the final finish, every piece is made with patience and care.', action: 'Our Story', caption: 'Handmade in Indonesia', image: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?auto=format&fit=crop&w=1900&q=75' },
+      { eyebrow: 'FEATURED COLLECTION', title: 'Bring spaces alive', emphasis: 'with craft.', description: 'Warm and honest handcrafted wood pieces, designed to become part of your home story.', action: 'Explore Collection', caption: 'Sunset Mirror — 2026 Collection', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1900&q=45' },
+      { eyebrow: 'NEW ARRIVALS', title: 'Natural, simple,', emphasis: 'and meaningful.', description: 'Characterful furniture blending modern function with the natural beauty of selected timber.', action: 'View New Collection', caption: 'Forest Stool — Limited Edition', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1900&q=45' },
+      { eyebrow: 'MADE BY ARTISANS', title: 'Every grain', emphasis: 'has a story.', description: 'From selected timber to the final finish, every piece is made with patience and care.', action: 'Our Story', caption: 'Handmade in Indonesia', image: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?auto=format&fit=crop&w=1900&q=45' },
     ])
 
 function goTo(index: number) { activeSlide.value = index }
@@ -50,7 +50,10 @@ onBeforeUnmount(() => { if (autoplay) clearInterval(autoplay) })
         </div>
       </div>
       <div class="hero-brand-card">
-        <img src="/images/md-furni-craft-logo-256.webp" alt="">
+        <picture>
+          <source type="image/avif" srcset="/images/md-furni-craft-logo-128.avif 128w, /images/md-furni-craft-logo-256.avif 256w" sizes="72px">
+          <img src="/images/md-furni-craft-logo-128.webp" srcset="/images/md-furni-craft-logo-128.webp 128w, /images/md-furni-craft-logo-256.webp 256w" sizes="72px" alt="">
+        </picture>
         <div><span>{{ locale === 'id' ? 'DIBUAT DENGAN HATI' : 'MADE WITH HEART' }}</span><strong>MD FURNI</strong><small>Authentic Indonesian Woodcraft</small></div>
       </div>
     </div>
