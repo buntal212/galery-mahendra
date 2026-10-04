@@ -186,7 +186,37 @@ useHead(() => ({
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+@font-face {
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/dm-mono-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/dm-sans-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url('/fonts/playfair-display-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: italic;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url('/fonts/playfair-display-latin-italic.woff2') format('woff2');
+}
 :root { --ink:#25241f; --paper:#f8f6f0; --cream:#eee9dd; --rust:#a85b37; --line:#d8d1c3; } * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; } button,input { font:inherit; } button { cursor:pointer; } .shell { width:min(1180px, calc(100% - 64px)); margin-inline:auto; }
 .hero { position:relative; isolation:isolate; min-height:720px; color:#fff; overflow:hidden; }.hero-slides { position:absolute; z-index:-1; inset:0; }.hero-slide { position:absolute; inset:0; background-position:center; background-size:cover; opacity:0; transform:scale(1.035); transition:opacity .8s ease,transform 6s ease; }.hero-slide.active { opacity:1; transform:scale(1); }.hero::after { content:''; position:absolute; z-index:0; inset:0; background:linear-gradient(180deg,rgba(13,15,12,.73) 0%,rgba(21,22,16,.42) 22%,rgba(21,22,16,.48) 58%,rgba(13,15,12,.62) 100%),linear-gradient(90deg,rgba(13,15,12,.52),rgba(13,15,12,.13) 74%); }.nav,.hero-content,.hero-caption,.hero-controls { position:relative; z-index:1; }.nav { height:112px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,.38); text-shadow:0 1px 8px rgba(0,0,0,.7); }.brand { display:flex; align-items:center; gap:10px; color:inherit; text-decoration:none; font-family:'DM Mono',monospace; font-size:11px; line-height:12px; letter-spacing:1px; }.brand i { font-family:'Playfair Display',serif; font-size:12px; letter-spacing:.2px; }.brand-logo { width:47px; height:47px; object-fit:cover; border-radius:50%; filter:drop-shadow(0 1px 4px rgba(0,0,0,.45)); }.nav .brand { gap:15px; }.nav .brand-logo { width:68px; height:68px; filter:drop-shadow(0 2px 7px rgba(0,0,0,.55)); }.nav .brand-copy { display:grid; gap:3px; }.nav .brand-copy strong { font:600 16px/1 'DM Sans',sans-serif; letter-spacing:2px; }.nav .brand-copy i { font-size:15px; line-height:1; letter-spacing:.15px; }.nav-links { display:flex; gap:36px; margin-left:90px; }.nav-links a { color:inherit; font-size:14px; text-decoration:none; }.nav-links a:hover,.text-link:hover { opacity:.68; }.nav-actions { display:flex; gap:18px; align-items:center; }.icon-button,.cart { background:transparent;border:0;color:inherit;padding:0;position:relative; }.language-switch { color:inherit; background:rgba(20,22,18,.22); border:1px solid rgba(255,255,255,.8); padding:5px 7px; font:10px 'DM Mono',monospace; letter-spacing:.7px; }.language-switch:hover { background:#fff; color:var(--ink); }.icon-button svg,.cart svg,.search-field svg { width:21px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }.cart b { position:absolute; left:14px; top:-10px; background:var(--rust); color:#fff; min-width:17px; height:17px; border-radius:10px; font-size:10px; display:grid; place-items:center; }
 .hero-content { padding-top:132px; }.eyebrow { margin:0 0 19px; color:var(--rust); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.25px; }.eyebrow.light { color:#e8cfad; } h1,h2 { font-family:'Playfair Display',serif; font-weight:500; letter-spacing:-1.6px; line-height:1.08; } h1 { max-width:680px; margin:0; font-size:clamp(46px,6vw,78px); } h1 em,h2 em { font-weight:500; }.hero-copy { max-width:390px; margin:27px 0 32px; color:rgba(255,255,255,.86); font-size:15px; line-height:1.7; }.button { display:inline-flex; align-items:center; gap:27px; border:0; padding:15px 20px; font-size:13px; text-decoration:none; transition:transform .2s, background .2s; }.button:hover { transform:translateY(-2px); }.button span,.text-link span { font-size:19px; line-height:0; }.button-light { color:var(--ink); background:#f6f2e9; }.button-dark { color:#fff;background:var(--ink); }.hero-caption { position:absolute; right:calc((100% - min(1180px, calc(100% - 64px)))/2); bottom:28px; margin:0; font:10px 'DM Mono',monospace; letter-spacing:1px; color:rgba(255,255,255,.72); }.hero-controls { position:absolute; left:calc((100% - min(1180px, calc(100% - 64px)))/2); bottom:23px; display:flex; align-items:center; gap:10px; }.hero-control { width:32px; height:32px; padding:0; border:1px solid rgba(255,255,255,.64); border-radius:50%; background:rgba(25,27,23,.25); color:#fff; font-size:18px; line-height:1; }.hero-control:hover { background:#fff; color:var(--ink); }.hero-dots { display:flex; gap:6px; margin:0 6px; }.hero-dot { width:7px; height:7px; border:0; border-radius:50%; padding:0; background:rgba(255,255,255,.45); }.hero-dot.active { width:22px; border-radius:8px; background:#fff; }
