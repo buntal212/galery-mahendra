@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -98,6 +98,50 @@ const siteUrl = String(config.public.siteUrl).replace(/\/+$/, '')
 const canonicalUrl = computed(() =>
   product.value.canonical_url?.trim() || `${siteUrl}/products/${encodeURIComponent(slug.value)}`,
 )
+const customOrderUrl = computed(() => {
+  const details = [
+    'Halo MD Furni and Craft Probolinggo, saya ingin membuat pesanan custom untuk produk berikut:',
+    `Nama: ${productName.value}`,
+    product.value.kode || product.value.sku ? `Kode: ${product.value.kode || product.value.sku}` : null,
+    priceLabel.value ? `Harga: ${priceLabel.value}` : null,
+    `Link produk: ${canonicalUrl.value}`,
+    '',
+    'Mohon informasi ketersediaan dan proses pemesanannya. Terima kasih.',
+  ].filter(Boolean).join('\n')
+
+  return `https://wa.me/6281336427712?text=${encodeURIComponent(details)}`
+})
+const isOrderFormOpen = ref(false)
+const orderForm = reactive({
+  name: '',
+  phone: '',
+  quantity: 1,
+  address: '',
+  note: '',
+})
+const checkoutUrl = computed(() => {
+  const details = [
+    'Halo MD Furni and Craft Probolinggo, saya ingin memesan produk berikut:',
+    `Produk: ${productName.value}`,
+    product.value.kode || product.value.sku ? `Kode: ${product.value.kode || product.value.sku}` : null,
+    priceLabel.value ? `Harga satuan: ${priceLabel.value}` : null,
+    `Jumlah: ${orderForm.quantity}`,
+    '',
+    'Data pemesan:',
+    `Nama: ${orderForm.name}`,
+    `WhatsApp: ${orderForm.phone}`,
+    `Alamat pengiriman: ${orderForm.address}`,
+    orderForm.note.trim() ? `Catatan: ${orderForm.note.trim()}` : null,
+    '',
+    `Link produk: ${canonicalUrl.value}`,
+  ].filter(Boolean).join('\n')
+
+  return `https://wa.me/6281336427712?text=${encodeURIComponent(details)}`
+})
+
+function submitOrder(): void {
+  window.open(checkoutUrl.value, '_blank', 'noopener')
+}
 const metaTitle = computed(() =>
   product.value.meta_title?.trim() || `${productName.value} | MD Furniture & Craft`,
 )
@@ -233,6 +277,76 @@ useHead(() => ({
         </p>
         <p v-if="priceLabel" class="product-detail__price">{{ priceLabel }}</p>
 
+        <div class="product-detail__actions">
+          <a
+            class="product-detail__custom-button"
+            :href="customOrderUrl"
+            target="_blank"
+            rel="noopener"
+          >
+            Pesan Custom
+          </a>
+          <button
+            class="product-detail__order-button"
+            type="button"
+            @click="isOrderFormOpen = true"
+          >
+            Pesan Sekarang
+          </button>
+        </div>
+
+        <section
+          v-if="isOrderFormOpen"
+          id="form-pesanan"
+          class="product-detail__order-form"
+          aria-labelledby="order-form-title"
+        >
+          <div class="product-detail__order-form-heading">
+            <div>
+              <p>FORM PEMESANAN</p>
+              <h2 id="order-form-title">Pesan {{ productName }}</h2>
+            </div>
+            <button
+              type="button"
+              aria-label="Tutup form pemesanan"
+              @click="isOrderFormOpen = false"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="product-detail__order-summary">
+            <strong>{{ productName }}</strong>
+            <span v-if="priceLabel">{{ priceLabel }}</span>
+          </div>
+
+          <form @submit.prevent="submitOrder">
+            <label>
+              Nama lengkap
+              <input v-model.trim="orderForm.name" type="text" autocomplete="name" required>
+            </label>
+            <label>
+              Nomor WhatsApp
+              <input v-model.trim="orderForm.phone" type="tel" inputmode="tel" autocomplete="tel" required>
+            </label>
+            <label>
+              Jumlah pesanan
+              <input v-model.number="orderForm.quantity" type="number" min="1" step="1" required>
+            </label>
+            <label>
+              Alamat pengiriman
+              <textarea v-model.trim="orderForm.address" rows="3" autocomplete="street-address" required></textarea>
+            </label>
+            <label>
+              Catatan pesanan <span>(opsional)</span>
+              <textarea v-model.trim="orderForm.note" rows="3"></textarea>
+            </label>
+            <button class="product-detail__submit-order" type="submit">
+              Kirim Pesanan via WhatsApp
+            </button>
+          </form>
+        </section>
+
         <section v-if="description" class="product-detail__description">
           <h2>Deskripsi Produk</h2>
           <p>{{ description }}</p>
@@ -331,6 +445,152 @@ useHead(() => ({
   font-weight: 600;
 }
 
+.product-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.product-detail__custom-button,
+.product-detail__order-button,
+.product-detail__submit-order {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  border-radius: 3px;
+  border: 1px solid var(--moss);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.product-detail__custom-button {
+  background: transparent;
+  color: var(--moss);
+}
+
+.product-detail__order-button,
+.product-detail__submit-order {
+  background: var(--moss);
+  color: #fff;
+}
+
+.product-detail__custom-button:hover {
+  background: #e7eee8;
+}
+
+.product-detail__order-button:hover,
+.product-detail__submit-order:hover {
+  background: #24362a;
+  transform: translateY(-1px);
+}
+
+.product-detail__custom-button:focus-visible,
+.product-detail__order-button:focus-visible,
+.product-detail__submit-order:focus-visible,
+.product-detail__order-form-heading button:focus-visible {
+  outline: 3px solid var(--rust);
+  outline-offset: 3px;
+}
+
+.product-detail__order-form {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  background: #eee9df;
+}
+
+.product-detail__order-form-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.product-detail__order-form-heading p {
+  margin: 0 0 6px;
+  color: var(--rust);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.product-detail__order-form-heading h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.product-detail__order-form-heading button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.product-detail__order-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 22px 0;
+  padding: 14px 0;
+  border-block: 1px solid var(--line);
+}
+
+.product-detail__order-summary span {
+  white-space: nowrap;
+}
+
+.product-detail__order-form form {
+  display: grid;
+  gap: 16px;
+}
+
+.product-detail__order-form label {
+  display: grid;
+  gap: 7px;
+  color: #3d413b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.product-detail__order-form label span {
+  color: #625f57;
+  font-weight: 400;
+}
+
+.product-detail__order-form input,
+.product-detail__order-form textarea {
+  width: 100%;
+  border: 1px solid #b9b4a9;
+  border-radius: 2px;
+  padding: 12px;
+  background: #fffdf8;
+  color: var(--ink);
+  font: inherit;
+}
+
+.product-detail__order-form textarea {
+  resize: vertical;
+}
+
+.product-detail__order-form input:focus,
+.product-detail__order-form textarea:focus {
+  outline: 2px solid var(--rust);
+  outline-offset: 1px;
+}
+
+.product-detail__submit-order {
+  width: 100%;
+  margin-top: 6px;
+}
+
 .product-detail__description,
 .product-detail__specifications {
   margin-top: 34px;
@@ -392,6 +652,15 @@ useHead(() => ({
 @media (max-width: 760px) {
   .product-detail__content {
     grid-template-columns: 1fr;
+  }
+
+  .product-detail__custom-button,
+  .product-detail__order-button {
+    width: 100%;
+  }
+
+  .product-detail__actions {
+    display: grid;
   }
 }
 </style>
