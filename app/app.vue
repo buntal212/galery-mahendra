@@ -187,6 +187,7 @@ useHead(() => ({
     </nav>
     <StorySection :text="text" />
     <ValueSection :values="text.values" />
+    <StoreLocation />
     <StoreFooter :text="text" />
   </main>
 </template>
