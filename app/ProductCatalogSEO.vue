@@ -69,7 +69,7 @@ defineEmits<{
               :src="product.image"
               :alt="product.imageAlt"
               width="600"
-              height="760"
+              height="750"
               loading="lazy"
               decoding="async"
             />
