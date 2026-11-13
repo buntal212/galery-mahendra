@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -94,30 +94,6 @@ const productName = computed(() => String(product.value.nama || ''))
 const imageAlt = (image: any) =>
   image.alt_text?.trim() || `${productName.value} by MD Furniture & Craft`
 const imageUrl = (image: any) => image.image_url || image.thumbnail_url
-const thumbnailUrl = (image: any) => image.thumbnail_url || image.image_url
-const selectedImageIndex = ref(0)
-const selectedImage = computed(
-  () => actualImages.value[selectedImageIndex.value] || actualImages.value[0]
-)
-
-watch(actualImages, () => {
-  selectedImageIndex.value = 0
-})
-
-function selectImage(index: number): void {
-  selectedImageIndex.value = index
-}
-
-function showPreviousImage(): void {
-  selectedImageIndex.value =
-    (selectedImageIndex.value - 1 + actualImages.value.length) %
-    actualImages.value.length
-}
-
-function showNextImage(): void {
-  selectedImageIndex.value =
-    (selectedImageIndex.value + 1) % actualImages.value.length
-}
 const description = computed(
   () =>
     product.value.deskripsi?.trim() ||
@@ -304,35 +280,16 @@ useHead(() => ({
 
     <article class="product-detail__content shell">
       <div class="product-detail__media">
-        <div v-if="selectedImage" class="product-detail__image-stage">
-          <img
-            class="product-detail__main-image"
-            :src="imageUrl(selectedImage)"
-            :alt="imageAlt(selectedImage)"
-            width="900"
-            height="1100"
-            fetchpriority="high"
-            decoding="async"
-          />
-          <template v-if="actualImages.length > 1">
-            <button
-              class="product-detail__gallery-navigation product-detail__gallery-navigation--previous"
-              type="button"
-              aria-label="Foto sebelumnya"
-              @click="showPreviousImage"
-            >
-              <span aria-hidden="true">‹</span>
-            </button>
-            <button
-              class="product-detail__gallery-navigation product-detail__gallery-navigation--next"
-              type="button"
-              aria-label="Foto berikutnya"
-              @click="showNextImage"
-            >
-              <span aria-hidden="true">›</span>
-            </button>
-          </template>
-        </div>
+        <img
+          v-if="actualImages.length"
+          class="product-detail__main-image"
+          :src="imageUrl(actualImages[0])"
+          :alt="imageAlt(actualImages[0])"
+          width="900"
+          height="1100"
+          fetchpriority="high"
+          decoding="async"
+        />
         <img
           v-else
           class="product-detail__main-image"
@@ -346,24 +303,16 @@ useHead(() => ({
         <section v-if="actualImages.length > 1" class="product-detail__gallery">
           <p class="product-detail__gallery-label">Foto produk</p>
           <div class="product-detail__thumbnails">
-            <button
-              v-for="(image, index) in actualImages"
+            <img
+              v-for="(image, index) in actualImages.slice(1)"
               :key="image.id || image.thumbnail_url || index"
-              type="button"
-              :class="{ active: index === selectedImageIndex }"
-              :aria-label="`Tampilkan foto ${index + 1}`"
-              :aria-pressed="index === selectedImageIndex"
-              @click="selectImage(index)"
-            >
-              <img
-                :src="thumbnailUrl(image)"
-                :alt="imageAlt(image)"
-                width="160"
-                height="190"
-                loading="lazy"
-                decoding="async"
-              />
-            </button>
+              :src="imageUrl(image)"
+              :alt="imageAlt(image)"
+              width="320"
+              height="320"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         </section>
       </div>
@@ -547,54 +496,6 @@ useHead(() => ({
   aspect-ratio: 6 / 7;
   object-fit: cover;
   background: var(--cream);
-}
-
-.product-detail__image-stage {
-  position: relative;
-}
-
-.product-detail__gallery-navigation {
-  position: absolute;
-  top: 50%;
-  z-index: 1;
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: rgb(28 38 31 / 82%);
-  color: #fff;
-  cursor: pointer;
-  opacity: 0;
-  transform: translateY(-50%);
-  transition:
-    background-color 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.product-detail__image-stage:hover .product-detail__gallery-navigation,
-.product-detail__gallery-navigation:focus-visible {
-  opacity: 1;
-}
-
-.product-detail__gallery-navigation:hover {
-  background: var(--moss);
-}
-
-.product-detail__gallery-navigation span {
-  margin-top: -4px;
-  font-size: 35px;
-  font-weight: 300;
-  line-height: 1;
-}
-
-.product-detail__gallery-navigation--previous {
-  left: 14px;
-}
-
-.product-detail__gallery-navigation--next {
-  right: 14px;
 }
 
 .product-detail__summary h1 {
@@ -824,33 +725,14 @@ useHead(() => ({
 
 .product-detail__thumbnails {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 12px;
-}
-
-.product-detail__thumbnails button {
-  min-width: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 2px solid transparent;
-  background: var(--cream);
-  cursor: pointer;
-}
-
-.product-detail__thumbnails button.active {
-  border-color: var(--moss);
-}
-
-.product-detail__thumbnails button:focus-visible,
-.product-detail__gallery-navigation:focus-visible {
-  outline: 3px solid var(--rust);
-  outline-offset: 3px;
 }
 
 .product-detail__thumbnails img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1;
   object-fit: cover;
 }
 
@@ -875,8 +757,5 @@ useHead(() => ({
     display: grid;
   }
 
-  .product-detail__gallery-navigation {
-    opacity: 1;
-  }
 }
 </style>
