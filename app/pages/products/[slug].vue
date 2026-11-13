@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const slug = computed(() => String(route.params.slug || ''))
-const cachedPages = useState<Record<number, { products: any[]; hasNext: boolean }>>(
-  'product-catalog-pages',
-  () => ({}),
-)
+const cachedPages = useState<
+  Record<number, { products: any[]; hasNext: boolean }>
+>('product-catalog-pages', () => ({}))
 
 const { data: detail, error } = await useAsyncData(
   computed(() => `product-detail-${slug.value}`),
   async () => {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.value)) {
-      throw createError({ statusCode: 404, statusMessage: 'Produk tidak ditemukan' })
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Produk tidak ditemukan'
+      })
     }
 
     try {
@@ -21,59 +23,106 @@ const { data: detail, error } = await useAsyncData(
         let pageData = cachedPages.value[page]
 
         if (!pageData) {
-          const response = await $fetch(`${config.public.apiBase}/catalog/products`, {
-            query: { page },
-          })
+          const response = await $fetch(
+            `${config.public.apiBase}/catalog/products`,
+            {
+              query: { page }
+            }
+          )
           pageData = {
             products: response.data || [],
-            hasNext: Boolean(response.next_page_url),
+            hasNext: Boolean(response.next_page_url)
           }
           cachedPages.value[page] = pageData
         }
 
-        const productIndex = pageData.products.findIndex((item: any) => item.slug === slug.value)
+        const productIndex = pageData.products.findIndex(
+          (item: any) => item.slug === slug.value
+        )
 
         if (productIndex !== -1) {
           return {
             product: pageData.products[productIndex],
             related: pageData.products
-              .filter((item: any, index: number) => index !== productIndex && item.slug)
-              .slice(0, 4),
+              .filter(
+                (item: any, index: number) =>
+                  index !== productIndex && item.slug
+              )
+              .slice(0, 4)
           }
         }
 
         if (!pageData.hasNext) break
       }
 
-      throw createError({ statusCode: 404, statusMessage: 'Produk tidak ditemukan' })
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Produk tidak ditemukan'
+      })
     } catch (fetchError: any) {
       if (fetchError?.statusCode === 404) throw fetchError
-      throw createError({ statusCode: 503, statusMessage: 'Katalog sementara tidak dapat dimuat' })
+      throw createError({
+        statusCode: 503,
+        statusMessage: 'Katalog sementara tidak dapat dimuat'
+      })
     }
-  },
+  }
 )
 
 if (error.value) {
   throw createError({
     statusCode: error.value.statusCode || 503,
-    statusMessage: error.value.statusMessage || 'Katalog sementara tidak dapat dimuat',
+    statusMessage:
+      error.value.statusMessage || 'Katalog sementara tidak dapat dimuat'
   })
 }
 
 if (!detail.value?.product) {
-  throw createError({ statusCode: 404, statusMessage: 'Produk tidak ditemukan' })
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Produk tidak ditemukan'
+  })
 }
 
 const product = computed(() => detail.value!.product)
 const actualImages = computed(() =>
-  (product.value.images || []).filter((image: any) => image.thumbnail_url || image.image_url),
+  (product.value.images || []).filter(
+    (image: any) => image.thumbnail_url || image.image_url
+  )
 )
 const productName = computed(() => String(product.value.nama || ''))
 const imageAlt = (image: any) =>
   image.alt_text?.trim() || `${productName.value} by MD Furniture & Craft`
-const imageUrl = (image: any) => image.thumbnail_url || image.image_url
-const description = computed(() =>
-  product.value.deskripsi?.trim() || product.value.deskripsi_singkat?.trim() || '',
+const imageUrl = (image: any) => image.image_url || image.thumbnail_url
+const thumbnailUrl = (image: any) => image.thumbnail_url || image.image_url
+const selectedImageIndex = ref(0)
+const selectedImage = computed(
+  () => actualImages.value[selectedImageIndex.value] || actualImages.value[0]
+)
+
+watch(actualImages, () => {
+  selectedImageIndex.value = 0
+})
+
+function selectImage(index: number): void {
+  selectedImageIndex.value = index
+}
+
+function showPreviousImage(): void {
+  selectedImageIndex.value =
+    (selectedImageIndex.value - 1 + actualImages.value.length) %
+    actualImages.value.length
+}
+
+function showNextImage(): void {
+  selectedImageIndex.value =
+    (selectedImageIndex.value + 1) % actualImages.value.length
+}
+const description = computed(
+  () =>
+    product.value.deskripsi?.trim() ||
+    product.value.deskripsi_singkat?.trim() ||
+    ''
 )
 const specifications = computed(() =>
   [
@@ -83,31 +132,40 @@ const specifications = computed(() =>
     ['Lebar', product.value.lebar],
     ['Tinggi', product.value.tinggi],
     ['Berat', product.value.berat],
-    ['Status stok', product.value.status_stok],
-  ].filter(([, value]) => value !== null && value !== undefined && value !== ''),
+    ['Status stok', product.value.status_stok]
+  ].filter(([, value]) => value !== null && value !== undefined && value !== '')
 )
 const priceAvailable = computed(
-  () => product.value.harga !== null && product.value.harga !== undefined && product.value.harga !== '',
+  () =>
+    product.value.harga !== null &&
+    product.value.harga !== undefined &&
+    product.value.harga !== ''
 )
 const formatPrice = (value: string | number) =>
   `Rp ${String(Math.round(Number(value))).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`
-const priceLabel = computed(() => priceAvailable.value
-  ? formatPrice(product.value.harga)
-  : null)
+const priceLabel = computed(() =>
+  priceAvailable.value ? formatPrice(product.value.harga) : null
+)
 const siteUrl = String(config.public.siteUrl).replace(/\/+$/, '')
-const canonicalUrl = computed(() =>
-  product.value.canonical_url?.trim() || `${siteUrl}/products/${encodeURIComponent(slug.value)}`,
+const canonicalUrl = computed(
+  () =>
+    product.value.canonical_url?.trim() ||
+    `${siteUrl}/products/${encodeURIComponent(slug.value)}`
 )
 const customOrderUrl = computed(() => {
   const details = [
     'Halo MD Furni and Craft Probolinggo, saya ingin membuat pesanan custom untuk produk berikut:',
     `Nama: ${productName.value}`,
-    product.value.kode || product.value.sku ? `Kode: ${product.value.kode || product.value.sku}` : null,
+    product.value.kode || product.value.sku
+      ? `Kode: ${product.value.kode || product.value.sku}`
+      : null,
     priceLabel.value ? `Harga: ${priceLabel.value}` : null,
     `Link produk: ${canonicalUrl.value}`,
     '',
-    'Mohon informasi ketersediaan dan proses pemesanannya. Terima kasih.',
-  ].filter(Boolean).join('\n')
+    'Mohon informasi ketersediaan dan proses pemesanannya. Terima kasih.'
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   return `https://wa.me/6281336427712?text=${encodeURIComponent(details)}`
 })
@@ -117,13 +175,15 @@ const orderForm = reactive({
   phone: '',
   quantity: 1,
   address: '',
-  note: '',
+  note: ''
 })
 const checkoutUrl = computed(() => {
   const details = [
     'Halo MD Furni and Craft Probolinggo, saya ingin memesan produk berikut:',
     `Produk: ${productName.value}`,
-    product.value.kode || product.value.sku ? `Kode: ${product.value.kode || product.value.sku}` : null,
+    product.value.kode || product.value.sku
+      ? `Kode: ${product.value.kode || product.value.sku}`
+      : null,
     priceLabel.value ? `Harga satuan: ${priceLabel.value}` : null,
     `Jumlah: ${orderForm.quantity}`,
     '',
@@ -133,8 +193,10 @@ const checkoutUrl = computed(() => {
     `Alamat pengiriman: ${orderForm.address}`,
     orderForm.note.trim() ? `Catatan: ${orderForm.note.trim()}` : null,
     '',
-    `Link produk: ${canonicalUrl.value}`,
-  ].filter(Boolean).join('\n')
+    `Link produk: ${canonicalUrl.value}`
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   return `https://wa.me/6281336427712?text=${encodeURIComponent(details)}`
 })
@@ -142,20 +204,29 @@ const checkoutUrl = computed(() => {
 function submitOrder(): void {
   window.open(checkoutUrl.value, '_blank', 'noopener')
 }
-const metaTitle = computed(() =>
-  product.value.meta_title?.trim() || `${productName.value} | MD Furniture & Craft`,
+const metaTitle = computed(
+  () =>
+    product.value.meta_title?.trim() ||
+    `${productName.value} | MD Furniture & Craft`
 )
-const metaDescription = computed(() =>
-  product.value.meta_description?.trim() || product.value.deskripsi_singkat?.trim() || undefined,
+const metaDescription = computed(
+  () =>
+    product.value.meta_description?.trim() ||
+    product.value.deskripsi_singkat?.trim() ||
+    undefined
 )
-const openGraphTitle = computed(() =>
-  product.value.og_title?.trim() || product.value.meta_title?.trim() || productName.value,
+const openGraphTitle = computed(
+  () =>
+    product.value.og_title?.trim() ||
+    product.value.meta_title?.trim() ||
+    productName.value
 )
-const openGraphDescription = computed(() =>
-  product.value.og_description?.trim() ||
-  product.value.meta_description?.trim() ||
-  product.value.deskripsi_singkat?.trim() ||
-  undefined,
+const openGraphDescription = computed(
+  () =>
+    product.value.og_description?.trim() ||
+    product.value.meta_description?.trim() ||
+    product.value.deskripsi_singkat?.trim() ||
+    undefined
 )
 const openGraphImage = computed(() => {
   const configuredImage = product.value.og_image?.trim()
@@ -169,7 +240,7 @@ const indexable = computed(() => {
   return value === null || value === undefined
     ? true
     : ![false, 0, '0', 'false'].includes(
-        typeof value === 'string' ? value.toLowerCase() : value,
+        typeof value === 'string' ? value.toLowerCase() : value
       )
 })
 const schema = computed(() => {
@@ -177,18 +248,19 @@ const schema = computed(() => {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: productName.value,
-    brand: { '@type': 'Brand', name: 'MD Furniture & Craft' },
+    brand: { '@type': 'Brand', name: 'MD Furniture & Craft' }
   }
 
   if (description.value) data.description = description.value
   if (actualImages.value.length) data.image = actualImages.value.map(imageUrl)
-  if (product.value.kode || product.value.sku) data.sku = product.value.kode || product.value.sku
+  if (product.value.kode || product.value.sku)
+    data.sku = product.value.kode || product.value.sku
   if (product.value.material) data.material = product.value.material
   if (priceAvailable.value) {
     data.offers = {
       '@type': 'Offer',
       priceCurrency: 'IDR',
-      price: String(product.value.harga),
+      price: String(product.value.harga)
     }
   }
 
@@ -200,23 +272,25 @@ const pageTitle = computed(() => metaTitle.value)
 useSeoMeta({
   title: () => pageTitle.value,
   description: () => metaDescription.value,
-  robots: () => indexable.value ? 'index,follow' : 'noindex,nofollow',
+  robots: () => (indexable.value ? 'index,follow' : 'noindex,nofollow'),
   ogTitle: () => openGraphTitle.value,
   ogDescription: () => openGraphDescription.value,
   ogImage: () => openGraphImage.value,
-  ogImageAlt: () => actualImages.value[0] ? imageAlt(actualImages.value[0]) : undefined,
+  ogImageAlt: () =>
+    actualImages.value[0] ? imageAlt(actualImages.value[0]) : undefined,
   ogType: 'product',
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
   twitterTitle: () => openGraphTitle.value,
   twitterDescription: () => openGraphDescription.value,
   twitterImage: () => openGraphImage.value,
-  twitterImageAlt: () => actualImages.value[0] ? imageAlt(actualImages.value[0]) : undefined,
+  twitterImageAlt: () =>
+    actualImages.value[0] ? imageAlt(actualImages.value[0]) : undefined
 })
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl.value }],
-  script: [{ type: 'application/ld+json', innerHTML: schema.value }],
+  script: [{ type: 'application/ld+json', innerHTML: schema.value }]
 }))
 </script>
 
@@ -230,16 +304,35 @@ useHead(() => ({
 
     <article class="product-detail__content shell">
       <div class="product-detail__media">
-        <img
-          v-if="actualImages.length"
-          class="product-detail__main-image"
-          :src="imageUrl(actualImages[0])"
-          :alt="imageAlt(actualImages[0])"
-          width="900"
-          height="1100"
-          fetchpriority="high"
-          decoding="async"
-        />
+        <div v-if="selectedImage" class="product-detail__image-stage">
+          <img
+            class="product-detail__main-image"
+            :src="imageUrl(selectedImage)"
+            :alt="imageAlt(selectedImage)"
+            width="900"
+            height="1100"
+            fetchpriority="high"
+            decoding="async"
+          />
+          <template v-if="actualImages.length > 1">
+            <button
+              class="product-detail__gallery-navigation product-detail__gallery-navigation--previous"
+              type="button"
+              aria-label="Foto sebelumnya"
+              @click="showPreviousImage"
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+            <button
+              class="product-detail__gallery-navigation product-detail__gallery-navigation--next"
+              type="button"
+              aria-label="Foto berikutnya"
+              @click="showNextImage"
+            >
+              <span aria-hidden="true">›</span>
+            </button>
+          </template>
+        </div>
         <img
           v-else
           class="product-detail__main-image"
@@ -251,18 +344,26 @@ useHead(() => ({
           decoding="async"
         />
         <section v-if="actualImages.length > 1" class="product-detail__gallery">
-          <h2>Galeri Produk</h2>
+          <p class="product-detail__gallery-label">Foto produk</p>
           <div class="product-detail__thumbnails">
-            <img
-              v-for="(image, index) in actualImages.slice(1)"
+            <button
+              v-for="(image, index) in actualImages"
               :key="image.id || image.thumbnail_url || index"
-              :src="imageUrl(image)"
-              :alt="imageAlt(image)"
-              width="240"
-              height="290"
-              loading="lazy"
-              decoding="async"
-            />
+              type="button"
+              :class="{ active: index === selectedImageIndex }"
+              :aria-label="`Tampilkan foto ${index + 1}`"
+              :aria-pressed="index === selectedImageIndex"
+              @click="selectImage(index)"
+            >
+              <img
+                :src="thumbnailUrl(image)"
+                :alt="imageAlt(image)"
+                width="160"
+                height="190"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
           </div>
         </section>
       </div>
@@ -272,7 +373,10 @@ useHead(() => ({
           {{ product.category.nama }}
         </p>
         <h1>{{ productName }}</h1>
-        <p v-if="product.deskripsi_singkat" class="product-detail__short-description">
+        <p
+          v-if="product.deskripsi_singkat"
+          class="product-detail__short-description"
+        >
           {{ product.deskripsi_singkat }}
         </p>
         <p v-if="priceLabel" class="product-detail__price">{{ priceLabel }}</p>
@@ -323,19 +427,41 @@ useHead(() => ({
           <form @submit.prevent="submitOrder">
             <label>
               Nama lengkap
-              <input v-model.trim="orderForm.name" type="text" autocomplete="name" required>
+              <input
+                v-model.trim="orderForm.name"
+                type="text"
+                autocomplete="name"
+                required
+              />
             </label>
             <label>
               Nomor WhatsApp
-              <input v-model.trim="orderForm.phone" type="tel" inputmode="tel" autocomplete="tel" required>
+              <input
+                v-model.trim="orderForm.phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                required
+              />
             </label>
             <label>
               Jumlah pesanan
-              <input v-model.number="orderForm.quantity" type="number" min="1" step="1" required>
+              <input
+                v-model.number="orderForm.quantity"
+                type="number"
+                min="1"
+                step="1"
+                required
+              />
             </label>
             <label>
               Alamat pengiriman
-              <textarea v-model.trim="orderForm.address" rows="3" autocomplete="street-address" required></textarea>
+              <textarea
+                v-model.trim="orderForm.address"
+                rows="3"
+                autocomplete="street-address"
+                required
+              ></textarea>
             </label>
             <label>
               Catatan pesanan <span>(opsional)</span>
@@ -352,7 +478,10 @@ useHead(() => ({
           <p>{{ description }}</p>
         </section>
 
-        <section v-if="specifications.length" class="product-detail__specifications">
+        <section
+          v-if="specifications.length"
+          class="product-detail__specifications"
+        >
           <h2>Spesifikasi</h2>
           <dl>
             <template v-for="[label, value] in specifications" :key="label">
@@ -362,7 +491,9 @@ useHead(() => ({
           </dl>
         </section>
 
-        <NuxtLink class="product-detail__back" to="/#koleksi">Kembali ke katalog</NuxtLink>
+        <NuxtLink class="product-detail__back" to="/#koleksi"
+          >Kembali ke katalog</NuxtLink
+        >
       </div>
     </article>
 
@@ -418,6 +549,54 @@ useHead(() => ({
   background: var(--cream);
 }
 
+.product-detail__image-stage {
+  position: relative;
+}
+
+.product-detail__gallery-navigation {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(28 38 31 / 82%);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-50%);
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.product-detail__image-stage:hover .product-detail__gallery-navigation,
+.product-detail__gallery-navigation:focus-visible {
+  opacity: 1;
+}
+
+.product-detail__gallery-navigation:hover {
+  background: var(--moss);
+}
+
+.product-detail__gallery-navigation span {
+  margin-top: -4px;
+  font-size: 35px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.product-detail__gallery-navigation--previous {
+  left: 14px;
+}
+
+.product-detail__gallery-navigation--next {
+  right: 14px;
+}
+
 .product-detail__summary h1 {
   margin: 8px 0 18px;
   font-size: clamp(36px, 4vw, 58px);
@@ -464,7 +643,10 @@ useHead(() => ({
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color .2s ease, color .2s ease, transform .2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .product-detail__custom-button {
@@ -598,7 +780,6 @@ useHead(() => ({
 
 .product-detail__description h2,
 .product-detail__specifications h2,
-.product-detail__gallery h2,
 .product-detail__related h2 {
   font-size: 20px;
 }
@@ -629,10 +810,41 @@ useHead(() => ({
   margin-top: 44px;
 }
 
+.product-detail__gallery {
+  margin-top: 14px;
+}
+
+.product-detail__gallery-label {
+  margin: 0 0 10px;
+  color: #777166;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .product-detail__thumbnails {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 12px;
+}
+
+.product-detail__thumbnails button {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--cream);
+  cursor: pointer;
+}
+
+.product-detail__thumbnails button.active {
+  border-color: var(--moss);
+}
+
+.product-detail__thumbnails button:focus-visible,
+.product-detail__gallery-navigation:focus-visible {
+  outline: 3px solid var(--rust);
+  outline-offset: 3px;
 }
 
 .product-detail__thumbnails img {
@@ -661,6 +873,10 @@ useHead(() => ({
 
   .product-detail__actions {
     display: grid;
+  }
+
+  .product-detail__gallery-navigation {
+    opacity: 1;
   }
 }
 </style>

@@ -22,7 +22,8 @@ defineEmits<{
         <p class="eyebrow"><span></span>{{ text.collectionEyebrow }}</p>
         <h2>
           {{ text.collectionTitle }}<br />
-          <span v-if="locale === 'id'">yang </span><em>{{ text.collectionEmphasis }}</em>
+          <span v-if="locale === 'id'">yang </span
+          ><em>{{ text.collectionEmphasis }}</em>
         </h2>
       </div>
       <p class="section-intro">{{ text.collectionDescription }}</p>
@@ -32,7 +33,11 @@ defineEmits<{
       <div
         class="category-tabs"
         role="group"
-        :aria-label="locale === 'id' ? 'Filter kategori produk' : 'Product category filters'"
+        :aria-label="
+          locale === 'id'
+            ? 'Filter kategori produk'
+            : 'Product category filters'
+        "
       >
         <button
           v-for="category in categories"
@@ -52,13 +57,19 @@ defineEmits<{
           class="catalog-search"
           type="search"
           :placeholder="text.searchPlaceholder"
-          @input="$emit('update:query', ($event.target as HTMLInputElement).value)"
+          @input="
+            $emit('update:query', ($event.target as HTMLInputElement).value)
+          "
         />
       </label>
     </div>
 
     <div class="products">
-      <article v-for="(product, index) in products" :key="product.id" class="product-card">
+      <article
+        v-for="(product, index) in products"
+        :key="product.id"
+        class="product-card"
+      >
         <div class="product-image" :style="{ '--tone': product.color }">
           <NuxtLink
             class="product-image__link"
@@ -73,8 +84,13 @@ defineEmits<{
               loading="lazy"
               decoding="async"
             />
-            <span class="product-number">{{ String(index + 1).padStart(2, '0') }}</span>
-            <span v-if="product.tag[locale === 'id' ? 0 : 1]" class="product-tag">
+            <span class="product-number">{{
+              String(index + 1).padStart(2, '0')
+            }}</span>
+            <span
+              v-if="product.tag[locale === 'id' ? 0 : 1]"
+              class="product-tag"
+            >
               {{ product.tag[locale === 'id' ? 0 : 1] }}
             </span>
           </NuxtLink>
@@ -88,9 +104,14 @@ defineEmits<{
         </div>
         <div class="product-info">
           <div>
-            <p>{{ text.categories[product.category] || product.categoryName }}</p>
+            <p>{{
+              text.categories[product.category] || product.categoryName
+            }}</p>
             <h3>
-              <NuxtLink class="product-name-link" :to="productHref(product.slug)">
+              <NuxtLink
+                class="product-name-link"
+                :to="productHref(product.slug)"
+              >
                 {{ product.name[locale === 'id' ? 0 : 1] }}
               </NuxtLink>
             </h3>

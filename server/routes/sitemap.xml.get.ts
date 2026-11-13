@@ -1,4 +1,4 @@
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async event => {
   const config = useRuntimeConfig(event)
   const siteUrl = String(config.public.siteUrl).replace(/\/+$/, '')
   const urls = new Set<string>([`${siteUrl}/`])
@@ -6,7 +6,9 @@ export default defineEventHandler(async (event) => {
 
   try {
     for (let page = 1; page <= 1999; page += 1) {
-      const response = await $fetch(`${apiBase}/catalog/products`, { query: { page } })
+      const response = await $fetch(`${apiBase}/catalog/products`, {
+        query: { page }
+      })
 
       for (const product of response.data || []) {
         const slug = String(product.slug || '')
@@ -16,8 +18,10 @@ export default defineEventHandler(async (event) => {
         if (
           indexable === false ||
           indexable === 0 ||
-          (typeof indexable === 'string' && ['0', 'false'].includes(indexable.toLowerCase()))
-        ) continue
+          (typeof indexable === 'string' &&
+            ['0', 'false'].includes(indexable.toLowerCase()))
+        )
+          continue
 
         const detailUrl = `${siteUrl}/products/${encodeURIComponent(slug)}`
         const canonicalUrl = String(product.canonical_url || '').trim()
@@ -42,14 +46,15 @@ export default defineEventHandler(async (event) => {
     // Keep the home page available in the sitemap if the catalog API is temporarily down.
   }
 
-  const escapeXml = (value: string) => value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+  const escapeXml = (value: string) =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;')
   const entries = [...urls]
-    .map((url) => `<url><loc>${escapeXml(url)}</loc></url>`)
+    .map(url => `<url><loc>${escapeXml(url)}</loc></url>`)
     .join('')
 
   setResponseHeader(event, 'content-type', 'application/xml; charset=utf-8')

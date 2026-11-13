@@ -1,7 +1,7 @@
 {
   "name": "galery-mahendra",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "node --use-system-ca ./node_modules/nuxt/bin/nuxt.mjs dev",

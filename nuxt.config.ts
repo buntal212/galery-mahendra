@@ -5,19 +5,19 @@ export default defineNuxtConfig({
   routeRules: {
     '/': {
       headers: {
-        'Cache-Control': 'no-transform',
-      },
+        'Cache-Control': 'no-transform'
+      }
     },
     '/fonts/**': {
       headers: {
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
+        'Cache-Control': 'public, max-age=31536000, immutable'
+      }
     },
     '/images/**': {
       headers: {
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
-    },
+        'Cache-Control': 'public, max-age=31536000, immutable'
+      }
+    }
   },
   runtimeConfig: {
     public: {
@@ -29,7 +29,7 @@ export default defineNuxtConfig({
       siteUrl:
         process.env.NUXT_PUBLIC_SITE_URL ||
         process.env.NUXT_SITE_URL ||
-        'https://mdfurniandcraft.my.id',
-    },
-  },
+        'https://mdfurniandcraft.my.id'
+    }
+  }
 })
