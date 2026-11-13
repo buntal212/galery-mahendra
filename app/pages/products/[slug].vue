@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -94,6 +94,28 @@ const productName = computed(() => String(product.value.nama || ''))
 const imageAlt = (image: any) =>
   image.alt_text?.trim() || `${productName.value} by MD Furniture & Craft`
 const imageUrl = (image: any) => image.image_url || image.thumbnail_url
+const selectedImageIndex = ref(0)
+const selectedImage = computed(
+  () => actualImages.value[selectedImageIndex.value] || actualImages.value[0]
+)
+
+watch(
+  () => product.value.id,
+  () => {
+    selectedImageIndex.value = 0
+  }
+)
+
+function showPreviousImage(): void {
+  selectedImageIndex.value =
+    (selectedImageIndex.value - 1 + actualImages.value.length) %
+    actualImages.value.length
+}
+
+function showNextImage(): void {
+  selectedImageIndex.value =
+    (selectedImageIndex.value + 1) % actualImages.value.length
+}
 const description = computed(
   () =>
     product.value.deskripsi?.trim() ||
@@ -280,16 +302,38 @@ useHead(() => ({
 
     <article class="product-detail__content shell">
       <div class="product-detail__media">
-        <img
-          v-if="actualImages.length"
-          class="product-detail__main-image"
-          :src="imageUrl(actualImages[0])"
-          :alt="imageAlt(actualImages[0])"
-          width="900"
-          height="1100"
-          fetchpriority="high"
-          decoding="async"
-        />
+        <div v-if="selectedImage" class="product-detail__image-stage">
+          <img
+            class="product-detail__main-image"
+            :src="imageUrl(selectedImage)"
+            :alt="imageAlt(selectedImage)"
+            width="900"
+            height="1100"
+            fetchpriority="high"
+            decoding="async"
+          />
+          <template v-if="actualImages.length > 1">
+            <button
+              class="product-detail__gallery-navigation product-detail__gallery-navigation--previous"
+              type="button"
+              aria-label="Tampilkan foto sebelumnya"
+              @click="showPreviousImage"
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+            <span class="product-detail__gallery-count" aria-live="polite">
+              {{ selectedImageIndex + 1 }} / {{ actualImages.length }}
+            </span>
+            <button
+              class="product-detail__gallery-navigation product-detail__gallery-navigation--next"
+              type="button"
+              aria-label="Tampilkan foto berikutnya"
+              @click="showNextImage"
+            >
+              <span aria-hidden="true">›</span>
+            </button>
+          </template>
+        </div>
         <img
           v-else
           class="product-detail__main-image"
@@ -300,21 +344,6 @@ useHead(() => ({
           fetchpriority="high"
           decoding="async"
         />
-        <section v-if="actualImages.length > 1" class="product-detail__gallery">
-          <p class="product-detail__gallery-label">Foto produk</p>
-          <div class="product-detail__thumbnails">
-            <img
-              v-for="(image, index) in actualImages.slice(1)"
-              :key="image.id || image.thumbnail_url || index"
-              :src="imageUrl(image)"
-              :alt="imageAlt(image)"
-              width="320"
-              height="320"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </section>
       </div>
 
       <div class="product-detail__summary">
@@ -496,6 +525,61 @@ useHead(() => ({
   aspect-ratio: 6 / 7;
   object-fit: cover;
   background: var(--cream);
+}
+
+.product-detail__image-stage {
+  position: relative;
+}
+
+.product-detail__gallery-navigation {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(28 38 31 / 84%);
+  color: #fff;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.product-detail__gallery-navigation:hover {
+  background: var(--moss);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.product-detail__gallery-navigation span {
+  margin-top: -4px;
+  font-size: 37px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.product-detail__gallery-navigation--previous {
+  left: 16px;
+}
+
+.product-detail__gallery-navigation--next {
+  right: 16px;
+}
+
+.product-detail__gallery-count {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgb(28 38 31 / 78%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .product-detail__summary h1 {
@@ -706,34 +790,8 @@ useHead(() => ({
   margin-top: 36px;
 }
 
-.product-detail__gallery,
 .product-detail__related {
   margin-top: 44px;
-}
-
-.product-detail__gallery {
-  margin-top: 14px;
-}
-
-.product-detail__gallery-label {
-  margin: 0 0 10px;
-  color: #777166;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.product-detail__thumbnails {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-}
-
-.product-detail__thumbnails img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
 }
 
 .product-detail__related ul {
@@ -756,6 +814,5 @@ useHead(() => ({
   .product-detail__actions {
     display: grid;
   }
-
 }
 </style>
