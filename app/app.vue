@@ -148,6 +148,7 @@ const copy = {
 }
 
 const config = useRuntimeConfig()
+const siteUrl = String(config.public.siteUrl).replace(/\/+$/, '')
 const catalogKey = computed(() => `product-catalog-${currentPage.value}`)
 const { data: catalog } = await useAsyncData(catalogKey, async () => {
   try {
@@ -270,14 +271,18 @@ function productHref(slug: string) {
 
 const seoCopy = {
   id: {
-    title: 'MD furni and craft | Furnitur & Kerajinan Kayu',
+    title: 'MD Furni and Craft | Furniture & Kerajinan Kayu Probolinggo',
     description:
-      'Jelajahi koleksi furnitur dan kerajinan kayu MD furni and craft. Temukan cermin, meja, bangku, dan dekorasi untuk melengkapi rumahmu.'
+      'MD Furni and Craft adalah pengrajin furniture dan kerajinan kayu Probolinggo. Temukan cermin, meja, bangku, dekorasi, serta karya kayu buatan tangan untuk rumahmu.',
+    keywords:
+      'pengerajin Probolinggo, pengrajin Probolinggo, furniture Probolinggo, kayu Probolinggo, galery Probolinggo, galeri Probolinggo, MD Probolinggo, MD Furni and Craft'
   },
   en: {
     title: 'MD furni and craft | Wooden Furniture & Crafts',
     description:
-      'Explore wooden furniture and handcrafted home decor from MD furni and craft. Discover mirrors, tables, stools, and accessories for your home.'
+      'Explore wooden furniture and handcrafted home decor from MD Furni and Craft in Probolinggo. Discover mirrors, tables, stools, and accessories for your home.',
+    keywords:
+      'wood furniture Probolinggo, wooden crafts Probolinggo, MD Furni and Craft'
   }
 }
 
@@ -295,6 +300,8 @@ useSeoMeta({
   ogTitle: () => (isHomePage.value ? pageTitle.value : undefined),
   ogDescription: () =>
     isHomePage.value ? seoCopy[locale.value].description : undefined,
+  keywords: () =>
+    isHomePage.value ? seoCopy[locale.value].keywords : undefined,
   ogSiteName: 'MD furni and craft',
   ogType: 'website',
   ogLocale: () => (locale.value === 'id' ? 'id_ID' : 'en_US')
@@ -319,7 +326,35 @@ useHead(() => ({
           }
         ]
       : [])
-  ]
+  ],
+  script: isHomePage.value
+    ? [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'LocalBusiness',
+            name: 'MD Furni and Craft',
+            description: seoCopy.id.description,
+            url: siteUrl,
+            telephone: '+6281336427712',
+            email: 'mdfurniture212@gmail.com',
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: 'Perum Bengawan Indah, Jl. Bengawan Solo',
+              addressLocality: 'Kota Probolinggo',
+              addressRegion: 'Jawa Timur',
+              addressCountry: 'ID'
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: -7.7828713,
+              longitude: 113.208873
+            }
+          }).replace(/</g, '\\u003c')
+        }
+      ]
+    : []
 }))
 </script>
 

@@ -16,8 +16,9 @@ const mapEmbedUrl =
           >Lihat langsung proses<br /><em>setiap karya dimulai.</em></h2
         >
         <p class="store-location__description"
-          >Datang ke bengkel MD Furni and Craft di Kota Probolinggo dan temukan
-          detail kayu pilihan yang kami kerjakan dengan tangan.</p
+          >MD Furni and Craft adalah pengrajin furniture dan kerajinan kayu
+          Probolinggo. Kunjungi galeri kami untuk melihat langsung detail kayu
+          pilihan yang dikerjakan dengan tangan.</p
         >
         <a
           :href="mapUrl"
