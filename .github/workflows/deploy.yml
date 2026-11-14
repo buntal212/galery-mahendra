@@ -5,104 +5,214 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
+# Satu deployment aktif pada satu waktu agar release dan symlink .output tidak
+# saling menimpa ketika beberapa push masuk berurutan.
+concurrency:
+  group: deploy-galery-mahendra-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
+    name: Deploy Galery Mahendra
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEPLOY_SHA: ${{ github.sha }}
 
     steps:
-      - name: Deploy to HOMELAB
+      - name: Deploy release atomik ke HOMELAB
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-
+          envs: DEPLOY_SHA
+          command_timeout: 25m
           script: |
-            set -e
-
-            echo "======================================"
-            echo " Deploy Galery Mahendra"
-            echo "======================================"
+            set -Eeuo pipefail
 
             PROJECT="/www/wwwroot/galery-mahendra"
+            RELEASE_ROOT="/www/wwwroot/galery-mahendra-releases"
+            CURRENT_OUTPUT="$PROJECT/.output"
+            SERVICE="mdfurniandcraft-ssr.service"
+            HEALTH_URL="http://127.0.0.1:3000/"
             APP_PATH="/www/server/nodejs/v22.20.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            RELEASE_STAMP="$(date -u +%Y%m%d%H%M%S)"
+            RELEASE_DIR="$RELEASE_ROOT/release-${RELEASE_STAMP}-${DEPLOY_SHA}"
 
-            echo "=== Update source from GitHub ==="
+            health_check() {
+              local attempt
 
-            sudo -u www -H env \
-              PATH="$APP_PATH" \
-              bash -c "
-                cd '$PROJECT'
+              for attempt in $(seq 1 12); do
+                if curl --fail --silent --show-error --max-time 5 "$HEALTH_URL" > /dev/null; then
+                  return 0
+                fi
 
-                echo 'Git version:'
-                git --version
+                echo "Health check gagal (percobaan ${attempt}/12), menunggu 2 detik..."
+                sleep 2
+              done
 
-                git config --global --add safe.directory '$PROJECT'
+              return 1
+            }
 
-                git fetch origin main
-                git reset --hard origin/main
-              "
+            activate_output() {
+              local target="$1"
 
-            echo "=== Install dependencies ==="
+              sudo -n -u www -H env \
+                CURRENT_OUTPUT="$CURRENT_OUTPUT" \
+                NEXT_OUTPUT="$PROJECT/.output.next" \
+                TARGET_OUTPUT="$target" \
+                bash -c '
+                  set -Eeuo pipefail
 
-            sudo -u www -H env \
+                  test -d "$TARGET_OUTPUT"
+                  rm -f "$NEXT_OUTPUT"
+                  ln -s "$TARGET_OUTPUT" "$NEXT_OUTPUT"
+
+                  # Setelah migrasi awal, penggantian symlink ini atomik.
+                  mv -Tf "$NEXT_OUTPUT" "$CURRENT_OUTPUT"
+                '
+            }
+
+            echo "======================================"
+            echo " Deploy Galery Mahendra: ${DEPLOY_SHA}"
+            echo "======================================"
+
+            [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]
+            sudo -n true
+
+            echo "=== Validasi service target ==="
+            SERVICE_USER="$(sudo -n systemctl show --property=User --value "$SERVICE")"
+            SERVICE_WORKDIR="$(sudo -n systemctl show --property=WorkingDirectory --value "$SERVICE")"
+            SERVICE_EXEC_START="$(sudo -n systemctl show --property=ExecStart --value "$SERVICE")"
+
+            if [[ "$SERVICE_USER" != "www" ]]; then
+              echo "ERROR: $SERVICE harus berjalan sebagai user www, bukan ${SERVICE_USER:-kosong}."
+              exit 1
+            fi
+
+            if [[ "$SERVICE_WORKDIR" != "$PROJECT" ]]; then
+              echo "ERROR: WorkingDirectory $SERVICE harus $PROJECT, saat ini: ${SERVICE_WORKDIR:-kosong}."
+              exit 1
+            fi
+
+            if [[ "$SERVICE_EXEC_START" != *".output/server/index.mjs"* ]]; then
+              echo "ERROR: ExecStart $SERVICE tidak memakai output Nuxt dari $PROJECT/.output."
+              exit 1
+            fi
+
+            if [[ ! -e "$CURRENT_OUTPUT" && ! -L "$CURRENT_OUTPUT" ]]; then
+              echo "ERROR: Output aktif $CURRENT_OUTPUT tidak ditemukan; deployment dibatalkan agar tidak menghapus layanan aktif."
+              exit 1
+            fi
+
+            PREVIOUS_OUTPUT="$(readlink -f "$CURRENT_OUTPUT")"
+            if [[ ! -d "$PREVIOUS_OUTPUT" ]]; then
+              echo "ERROR: Target output aktif tidak valid: $PREVIOUS_OUTPUT"
+              exit 1
+            fi
+
+            # Migrasi pertama mengubah direktori .output lama menjadi release yang
+            # disimpan untuk rollback. Deployment berikutnya hanya mengganti symlink.
+            if [[ -L "$CURRENT_OUTPUT" ]]; then
+              ROLLBACK_OUTPUT="$PREVIOUS_OUTPUT"
+            else
+              ROLLBACK_OUTPUT="$RELEASE_ROOT/legacy-output-${RELEASE_STAMP}"
+            fi
+
+            echo "=== Siapkan release terpisah ==="
+            sudo -n install -d -o www -g www -m 0755 "$RELEASE_ROOT" "$PROJECT/.npm-cache"
+
+            if ! sudo -n -u www -H env \
               PATH="$APP_PATH" \
               NUXT_TELEMETRY_DISABLED=1 \
               npm_config_cache="$PROJECT/.npm-cache" \
               CI=true \
-              bash -c "
-                cd '$PROJECT'
+              PROJECT="$PROJECT" \
+              RELEASE_DIR="$RELEASE_DIR" \
+              DEPLOY_SHA="$DEPLOY_SHA" \
+              PREVIOUS_OUTPUT="$PREVIOUS_OUTPUT" \
+              bash -c '
+                set -Eeuo pipefail
 
-                echo 'Node version:'
-                node -v
+                git -C "$PROJECT" fetch --prune origin main
+                git -C "$PROJECT" cat-file -e "${DEPLOY_SHA}^{commit}"
+                git -C "$PROJECT" worktree add --detach "$RELEASE_DIR" "$DEPLOY_SHA"
 
-                echo 'NPM version:'
-                npm -v
+                cd "$RELEASE_DIR"
 
+                # Konfigurasi server tetap berada pada checkout utama dan tidak
+                # disalin ke release atau Git.
+                for env_file in .env .env.production; do
+                  if [[ -f "$PROJECT/$env_file" ]]; then
+                    ln -s "$PROJECT/$env_file" "$env_file"
+                  fi
+                done
+
+                echo "Node: $(node -v)"
+                echo "NPM: $(npm -v)"
                 npm ci
-              "
-
-            echo "=== Build Nuxt SSR ==="
-
-            sudo -u www -H env \
-              PATH="$APP_PATH" \
-              NUXT_TELEMETRY_DISABLED=1 \
-              CI=true \
-              bash -c "
-                cd '$PROJECT'
-
                 npm run build
-              "
 
-            echo "=== Check Nuxt output ==="
+                test -f "$RELEASE_DIR/.output/server/index.mjs"
 
-            if [ ! -f "$PROJECT/.output/server/index.mjs" ]; then
-              echo "ERROR: .output/server/index.mjs tidak ditemukan"
+                # Nama asset Nuxt memakai hash. Salin asset yang belum ada dari
+                # release aktif agar HTML/CDN/browser lama tidak langsung 404.
+                if [[ -d "$PREVIOUS_OUTPUT/public/_nuxt" ]]; then
+                  mkdir -p "$RELEASE_DIR/.output/public/_nuxt"
+                  cp -a -n "$PREVIOUS_OUTPUT/public/_nuxt/." "$RELEASE_DIR/.output/public/_nuxt/"
+                fi
+
+                # Build dibuat oleh www; izin ini memastikan systemd (www) dapat
+                # membaca seluruh output dan menelusuri folder release.
+                chmod -R u=rwX,go=rX "$RELEASE_DIR/.output"
+                test -r "$RELEASE_DIR/.output/server/index.mjs"
+              ';
+            then
+              echo "ERROR: Build release gagal. Output aktif tidak diubah."
+              sudo -n -u www -H git -C "$PROJECT" worktree remove --force "$RELEASE_DIR" || true
               exit 1
             fi
 
-            echo "Nuxt build output OK"
+            echo "=== Aktifkan release baru ==="
+            if [[ ! -L "$CURRENT_OUTPUT" ]]; then
+              # Hanya terjadi sekali saat memigrasikan .output lama ke pola release.
+              sudo -n -u www -H mv "$CURRENT_OUTPUT" "$ROLLBACK_OUTPUT"
+            fi
+            activate_output "$RELEASE_DIR/.output"
 
-            echo "=== Restart PM2 ==="
+            echo "=== Restart systemd dan health check ==="
+            if ! sudo -n systemctl restart "$SERVICE" || ! health_check; then
+              echo "ERROR: Release baru gagal. Mengaktifkan rollback..."
+              activate_output "$ROLLBACK_OUTPUT"
 
-            sudo -u www -H env \
-              PATH="$APP_PATH" \
-              NUXT_TELEMETRY_DISABLED=1 \
-              pm2 restart galery_mahendra --update-env
+              if ! sudo -n systemctl restart "$SERVICE" || ! health_check; then
+                echo "CRITICAL: Rollback service juga gagal. Periksa $SERVICE secara manual."
+                exit 1
+              fi
 
-            echo "=== Save PM2 ==="
+              echo "Rollback berhasil. Release baru tidak dipertahankan sebagai aktif."
+              exit 1
+            fi
 
-            sudo -u www -H env \
-              PATH="$APP_PATH" \
-              pm2 save
+            echo "=== Bersihkan release lama (menyimpan 5 release terakhir) ==="
+            mapfile -t OLD_RELEASES < <(
+              find "$RELEASE_ROOT" -mindepth 1 -maxdepth 1 -type d -name 'release-*' -printf '%T@ %p\n' \
+                | sort -nr \
+                | awk 'NR > 5 {print $2}'
+            )
 
-            echo "=== PM2 Status ==="
+            for old_release in "${OLD_RELEASES[@]:-}"; do
+              [[ "$old_release" == "$ROLLBACK_OUTPUT" ]] && continue
+              sudo -n -u www -H git -C "$PROJECT" worktree remove --force "$old_release" || true
+            done
+            sudo -n -u www -H git -C "$PROJECT" worktree prune
 
-            sudo -u www -H env \
-              PATH="$APP_PATH" \
-              pm2 status galery_mahendra
-
+            sudo -n systemctl is-active --quiet "$SERVICE"
             echo "======================================"
-            echo " DEPLOY SUCCESS"
+            echo " DEPLOY SUCCESS: ${DEPLOY_SHA}"
             echo "======================================"
