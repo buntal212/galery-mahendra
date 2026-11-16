@@ -9,11 +9,11 @@ const slides = computed(() =>
   props.locale === 'id'
     ? [
         {
-          eyebrow: 'KOLEKSI UNGGULAN',
-          title: 'Hidupkan ruang',
-          emphasis: 'dengan karya.',
+          eyebrow: 'FURNITURE PROBOLINGGO',
+          title: 'Furniture kayu',
+          emphasis: 'buatan Probolinggo.',
           description:
-            'Kerajinan kayu buatan tangan yang hangat, jujur, dan dirancang untuk menjadi bagian dari cerita rumahmu.',
+            'MD Furni and Craft adalah pengrajin Probolinggo yang menghadirkan furniture dan kerajinan kayu buatan tangan untuk melengkapi setiap sudut rumahmu.',
           action: 'Jelajahi Koleksi',
           caption: 'Cermin Senja — Koleksi 2026',
           image:

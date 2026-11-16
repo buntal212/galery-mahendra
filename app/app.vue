@@ -7,7 +7,6 @@ const activeCategory = ref('all')
 const cartCount = ref(0)
 const query = ref('')
 const route = useRoute()
-const requestUrl = useRequestURL()
 const currentPage = computed(() => {
   const value = Number(route.query.page || 1)
   return Number.isInteger(value) && value > 0 && value <= 10000 ? value : 1
@@ -271,9 +270,9 @@ function productHref(slug: string) {
 
 const seoCopy = {
   id: {
-    title: 'MD Furni and Craft | Furniture & Kerajinan Kayu Probolinggo',
+    title: 'Furniture Probolinggo | Furniture Kayu Custom | MD Furni and Craft',
     description:
-      'MD Furni and Craft adalah pengrajin furniture dan kerajinan kayu Probolinggo. Temukan cermin, meja, bangku, dekorasi, serta karya kayu buatan tangan untuk rumahmu.',
+      'Cari furniture atau pengrajin Probolinggo? MD Furni and Craft menyediakan furniture kayu custom dan kerajinan kayu buatan tangan: meja, kursi, cermin, bangku, serta dekorasi rumah.',
     keywords:
       'pengerajin Probolinggo, pengrajin Probolinggo, furniture Probolinggo, kayu Probolinggo, galery Probolinggo, galeri Probolinggo, MD Probolinggo, MD Furni and Craft'
   },
@@ -322,7 +321,7 @@ useHead(() => ({
       ? [
           {
             rel: 'canonical',
-            href: `${requestUrl.origin}${route.path}${currentPage.value > 1 ? `?page=${currentPage.value}` : ''}`
+            href: `${siteUrl}${route.path}${currentPage.value > 1 ? `?page=${currentPage.value}` : ''}`
           }
         ]
       : [])
@@ -333,12 +332,16 @@ useHead(() => ({
           type: 'application/ld+json',
           innerHTML: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'LocalBusiness',
+            '@type': ['LocalBusiness', 'FurnitureStore'],
             name: 'MD Furni and Craft',
             description: seoCopy.id.description,
             url: siteUrl,
             telephone: '+6281336427712',
             email: 'mdfurniture212@gmail.com',
+            areaServed: {
+              '@type': 'City',
+              name: 'Probolinggo'
+            },
             address: {
               '@type': 'PostalAddress',
               streetAddress: 'Perum Bengawan Indah, Jl. Bengawan Solo',
