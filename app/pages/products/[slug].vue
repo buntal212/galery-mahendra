@@ -122,6 +122,11 @@ const description = computed(
     product.value.deskripsi_singkat?.trim() ||
     ''
 )
+const schemaDescription = computed(
+  () =>
+    description.value ||
+    `${productName.value} adalah produk ${product.value.category?.nama || 'furnitur'} dari MD Furniture & Craft.`
+)
 const specifications = computed(() =>
   [
     ['Kode Produk', product.value.kode || product.value.sku],
@@ -246,10 +251,10 @@ const schema = computed(() => {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: productName.value,
+    description: schemaDescription.value,
     brand: { '@type': 'Brand', name: 'MD Furniture & Craft' }
   }
 
-  if (description.value) data.description = description.value
   if (actualImages.value.length) data.image = actualImages.value.map(imageUrl)
   if (product.value.kode || product.value.sku)
     data.sku = product.value.kode || product.value.sku
